@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mars Reader · AI 写推文 Demo</title>
+  <script src="/lucide-icons.js?v=171"></script>
+  <style>
+    :root {
+      --ink: #24272c;
+      --ink-soft: #60666f;
+      --ink-faint: #8a9098;
+      --paper: #f5f7f8;
+      --paper-strong: #ffffff;
+      --paper-muted: #edf0f2;
+      --line: #dfe4e8;
+      --line-strong: #cbd2d8;
+      --mars: #cf4d3f;
+      --mars-deep: #9f342d;
+      --mars-wash: #f9e9e6;
+      --green: #367363;
+      --shadow: 0 16px 40px rgba(37, 45, 52, .08);
+      --radius-card: 14px;
+      --radius-control: 9px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      background: #e9edef;
+      color: var(--ink);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, textarea, input { font: inherit; }
+    button { color: inherit; }
+    .icon { width: 17px; height: 17px; flex: none; stroke-width: 1.8; }
+    .icon.small { width: 14px; height: 14px; }
+    .demo-shell {
+      display: grid;
+      grid-template-columns: 218px 292px minmax(430px, 1fr) 438px;
+      height: min(900px, calc(100vh - 38px));
+      min-height: 640px;
+      margin: 19px auto;
+      max-width: 1640px;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid #d5dadd;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .rail, .feed, .reader, .desk { min-width: 0; min-height: 0; }
+    .rail {
+      display: flex;
+      flex-direction: column;
+      background: #eef1f2;
+      border-right: 1px solid var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 17px 16px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand img { width: 35px; height: 35px; border-radius: 11px; }
+    .brand-copy { min-width: 0; }
+    .brand-copy strong { display: block; font-size: 14px; letter-spacing: -.015em; }
+    .brand-copy span {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink-faint);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .rail-scroll { overflow: auto; padding: 16px 10px; }
+    .rail-label {
+      margin: 0 9px 7px;
+      color: var(--ink-faint);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .rail-section + .rail-section { margin-top: 20px; }
+    .rail-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 10px;
+      margin: 2px 0;
+      padding: 9px 10px;
+      border: 0;
+      border-radius: var(--radius-control);
+      background: transparent;
+      color: var(--ink-soft);
+      cursor: pointer;
+      text-align: left;
+      transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+    .rail-item:hover { background: rgba(255,255,255,.72); color: var(--ink); }
+    .rail-item:active { transform: translateY(1px); }
+    .rail-item.active {
+      background: var(--paper-strong);
+      box-shadow: 0 1px 0 rgba(36,39,44,.04);
+      color: var(--mars-deep);
+      font-weight: 750;
+    }
+    .rail-item .count { margin-left: auto; color: var(--ink-faint); font-size: 11px; }
+    .source-item { padding-top: 7px; padding-bottom: 7px; }
+    .source-dot { width: 7px; height: 7px; border-radius: 50%; background: #6d8790; flex: none; }
+    .source-dot.red { background: var(--mars); }
+    .source-dot.blue { background: #5b78a5; }
+    .source-dot.green { background: var(--green); }
+    .source-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+    .rail-footer {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: auto;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 11px;
+    }
+    .local-state { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px #dcebe6; }
+
+    .feed {
+      display: flex;
+      flex-direction: column;
+      background: var(--paper-strong);
+      border-right: 1px solid var(--line);
+    }
+    .feed-head { padding: 18px 17px 14px; border-bottom: 1px solid var(--line); }
+    .feed-title-row { display: flex; align-items: end; justify-content: space-between; gap: 10px; }
+    .feed-title-row h1 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
+    .feed-title-row span { color: var(--ink-faint); font-size: 11px; }
+    .feed-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--paper);
+      color: var(--ink-faint);
+    }
+    .feed-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
+    .feed-search input::placeholder { color: #9aa1a8; }
+    .feed-tabs { display: flex; gap: 5px; margin-top: 13px; }
+    .feed-tab {
+      border: 0;
+      border-bottom: 2px solid transparent;
+      padding: 3px 5px 7px;
+      background: transparent;
+      color: var(--ink-faint);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .feed-tab.active { border-color: var(--mars); color: var(--ink); font-weight: 800; }
+    .feed-tab span { margin-left: 3px; color: var(--ink-faint); font-size: 10px; }
+    .feed-list { overflow: auto; padding: 5px 9px 18px; }
+    .story {
+      display: block;
+      width: 100%;
+      padding: 13px 9px 14px;
+      border: 0;
+      border-bottom: 1px solid #edf0f1;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+    .story:hover { background: #fbfcfc; }
+    .story.active { margin: 5px 0; padding: 12px 10px 13px; border: 1px solid #e7c8c3; border-radius: 11px; background: #fffafa; }
+    .story-meta { display: flex; align-items: center; gap: 6px; color: var(--ink-faint); font-size: 10px; }
+    .story-source { color: var(--mars-deep); font-weight: 800; }
+    .story h2 { margin: 7px 0 5px; font-size: 13px; line-height: 1.42; letter-spacing: -.015em; }
+    .story p { margin: 0; color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+    .story-foot { display: flex; align-items: center; gap: 6px; margin-top: 9px; color: var(--ink-faint); font-size: 10px; }
+    .story-foot .pin { margin-left: auto; color: var(--mars); }
+
+    .reader { overflow: auto; background: #fbfcfc; }
+    .reader-inner { max-width: 720px; margin: 0 auto; padding: 34px clamp(24px, 5vw, 70px) 80px; }
+    .reader-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--ink-faint); font-size: 11px; }
+    .reader-label { display: inline-flex; align-items: center; gap: 6px; color: var(--mars-deep); font-weight: 800; }
+    .reader-actions { display: flex; gap: 4px; }
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink-faint);
+      cursor: pointer;
+    }
+    .icon-button:hover { border-color: var(--line); background: var(--paper-strong); color: var(--ink); }
+    .reader h2 { max-width: 650px; margin: 22px 0 13px; font-size: clamp(28px, 3vw, 42px); line-height: 1.08; letter-spacing: -.055em; }
+    .reader-deck { max-width: 600px; margin: 0; color: var(--ink-soft); font-size: 15px; line-height: 1.62; }
+    .reader-byline { display: flex; flex-wrap: wrap; gap: 7px 12px; margin-top: 18px; color: var(--ink-faint); font-size: 11px; }
+    .rule { height: 1px; margin: 27px 0 25px; background: var(--line); }
+    .article-copy { color: #3e454b; font-family: Georgia, "Songti SC", "Noto Serif CJK SC", serif; font-size: 16px; line-height: 1.95; }
+    .article-copy p { margin: 0 0 1.35em; }
+    .article-copy .lead { color: var(--ink); font-size: 18px; line-height: 1.75; }
+    .pull-quote {
+      margin: 25px 0;
+      padding: 17px 19px;
+      border-left: 3px solid var(--mars);
+      background: var(--mars-wash);
+      color: var(--mars-deep);
+      font-family: ui-sans-serif, sans-serif;
+      font-size: 15px;
+      font-weight: 750;
+      line-height: 1.65;
+    }
+    .reader-source-note { margin-top: 38px; padding-top: 15px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 11px; }
+
+    .desk {
+      display: flex;
+      flex-direction: column;
+      background: #f3f5f6;
+    }
+    .desk-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 16px 13px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper-strong);
+    }
+    .desk-kicker { color: var(--mars); font-size: 9px; font-weight: 900; letter-spacing: .17em; }
+    .desk-head h2 { margin: 3px 0 0; font-size: 21px; letter-spacing: -.045em; }
+    .desk-head-actions { display: flex; align-items: center; gap: 6px; }
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 7px;
+      border: 1px solid #dfe3e5;
+      border-radius: 999px;
+      color: var(--ink-faint);
+      font-size: 9px;
+      white-space: nowrap;
+    }
+    .demo-badge i { width: 6px; height: 6px; border-radius: 50%; background: #d28b38; }
+    .desk-icon-button {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink-faint);
+      cursor: pointer;
+    }
+    .desk-icon-button:hover { border-color: var(--line); background: var(--paper); color: var(--ink); }
+    .guide-popover {
+      position: absolute;
+      z-index: 10;
+      top: 52px;
+      right: 13px;
+      width: 238px;
+      padding: 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 16px 30px rgba(37,45,52,.12);
+      color: var(--ink-soft);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+    .guide-popover strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 11px; }
+    .desk { position: relative; }
+    .desk-scroll { overflow: auto; padding: 13px 14px 18px; }
+    .reference {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid #dfe3e5;
+      border-radius: 10px;
+      background: rgba(255,255,255,.76);
+      color: var(--ink-soft);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+    .reference .icon { color: var(--mars); }
+    .reference-copy { min-width: 0; flex: 1; }
+    .reference-copy strong { display: block; overflow: hidden; color: var(--ink); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .reference-copy span { display: block; margin-top: 2px; color: var(--ink-faint); }
+    .reference-status { display: inline-flex; align-items: center; gap: 4px; color: #a3632e; white-space: nowrap; }
+    .reference-status i { width: 5px; height: 5px; border-radius: 50%; background: #d28b38; }
+    .reference-status.fresh { color: var(--green); }
+    .reference-status.fresh i { background: var(--green); }
+    .reference-refresh { margin-left: auto; }
+    .workflow { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 9px; margin-top: 14px; }
+    .step-rail { position: relative; padding-top: 4px; }
+    .step-rail::before { content: ""; position: absolute; top: 21px; bottom: 19px; left: 16px; width: 1px; background: #d8dddf; }
+    .step-marker { position: relative; display: grid; place-items: center; width: 32px; height: 32px; margin-bottom: 47px; border: 1px solid #c8cfd3; border-radius: 50%; background: #f3f5f6; color: var(--ink-faint); cursor: pointer; font-size: 12px; font-weight: 800; }
+    .step-marker:last-child { margin-bottom: 0; }
+    .step-marker.active { border-color: var(--mars); background: var(--mars); color: #fff; box-shadow: 0 0 0 4px var(--mars-wash); }
+    .step-marker.complete { border-color: var(--green); background: #e6f0ed; color: var(--green); }
+    .steps { min-width: 0; }
+    .step-panel {
+      margin-bottom: 9px;
+      border: 1px solid #dfe3e5;
+      border-radius: 11px;
+      background: rgba(255,255,255,.78);
+      overflow: hidden;
+    }
+    .step-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      padding: 11px 12px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+    .step-heading:hover { background: rgba(255,255,255,.76); }
+    .step-heading-copy { min-width: 0; }
+    .step-heading h3 { margin: 0; color: var(--ink); font-size: 12px; }
+    .step-heading p { margin: 3px 0 0; color: var(--ink-faint); font-size: 9px; line-height: 1.35; }
+    .step-chevron { color: var(--ink-faint); transform: rotate(90deg); transition: transform .16s ease; }
+    .step-panel.collapsed .step-chevron { transform: rotate(0deg); }
+    .step-content { padding: 0 12px 13px; }
+    .step-panel.collapsed .step-content { display: none; }
+    .field { display: grid; gap: 6px; margin-top: 11px; }
+    .field:first-child { margin-top: 0; }
+    .field-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--ink); font-size: 10px; font-weight: 800; }
+    .field-label small { color: var(--ink-faint); font-size: 9px; font-weight: 500; }
+    .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .mode {
+      min-height: 62px;
+      padding: 8px 7px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: rgba(255,255,255,.64);
+      color: var(--ink-soft);
+      cursor: pointer;
+      text-align: left;
+    }
+    .mode:hover { border-color: #b4bdc2; }
+    .mode.active { border-color: var(--mars); background: var(--mars-wash); color: var(--mars-deep); }
+    .mode strong { display: block; font-size: 10px; }
+    .mode small { display: block; margin-top: 4px; font-size: 9px; line-height: 1.35; }
+    .step-panel textarea { min-height: 74px; }
+    .step-panel textarea.requirement { min-height: 54px; }
+    .chip-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+    .choice-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 27px;
+      padding: 0 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      background: rgba(255,255,255,.68);
+      color: var(--ink-soft);
+      cursor: pointer;
+      font-size: 9px;
+    }
+    .choice-chip:hover { border-color: #b4bdc2; }
+    .choice-chip.active { border-color: var(--mars); background: var(--mars-wash); color: var(--mars-deep); font-weight: 750; }
+    .guardrail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+    .guardrail {
+      display: grid;
+      gap: 4px;
+      min-height: 54px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.52);
+      color: var(--ink-soft);
+      cursor: pointer;
+      text-align: left;
+    }
+    .guardrail.active { border-color: #c8ddd6; background: #f0f6f4; color: var(--green); }
+    .guardrail-head { display: flex; align-items: center; gap: 4px; color: var(--ink); font-size: 9px; font-weight: 800; }
+    .guardrail.active .guardrail-head { color: var(--green); }
+    .guardrail small { color: var(--ink-faint); font-size: 8px; line-height: 1.3; }
+    .understanding {
+      display: grid;
+      gap: 6px;
+      padding: 9px;
+      border: 1px solid #e7c8c3;
+      border-radius: 8px;
+      background: #fffafa;
+    }
+    .understanding-row { display: grid; grid-template-columns: 54px minmax(0,1fr); gap: 7px; color: var(--ink-soft); font-size: 9px; line-height: 1.4; }
+    .understanding-row strong { color: var(--mars-deep); font-size: 9px; }
+    .quality-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 8px; }
+    .quality-item { display: flex; align-items: center; gap: 5px; padding: 6px 7px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink-soft); font-size: 8px; }
+    .quality-item .icon { color: var(--green); }
+    .step-actions { display: flex; gap: 6px; margin-top: 10px; }
+    .step-actions .button { flex: 1; }
+    .generation-card { margin-top: 10px; padding: 10px; border-top: 1px solid var(--line); background: #f8f9f9; }
+    .generation-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .generation-head strong { font-size: 11px; }
+    .generation-meta { color: var(--ink-faint); font-size: 8px; }
+    .progress-row { display: flex; align-items: center; gap: 7px; margin-top: 9px; }
+    .progress-track { flex: 1; height: 5px; overflow: hidden; border-radius: 99px; background: #e2e6e8; }
+    .progress-bar { width: 0; height: 100%; border-radius: inherit; background: var(--mars); transition: width .25s ease; }
+    .progress-value { min-width: 27px; color: var(--ink-faint); font-size: 8px; text-align: right; }
+    .draft-wrap { display: grid; gap: 6px; margin-top: 10px; }
+    .draft-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .draft-head strong { font-size: 11px; }
+    .draft-tools { display: flex; align-items: center; gap: 3px; }
+    .draft-status { color: var(--ink-faint); font-size: 8px; }
+    .draft-tools button { display: inline-flex; align-items: center; gap: 3px; padding: 3px 4px; border: 0; background: transparent; color: var(--ink-faint); cursor: pointer; font-size: 8px; }
+    .draft-tools button:hover { color: var(--ink); }
+    .draft { min-height: 122px; background: #fff; border-color: #cfd8dc; font-size: 11px; line-height: 1.65; }
+    .desk-foot { padding: 9px 14px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 9px; }
+    textarea {
+      width: 100%;
+      min-height: 88px;
+      resize: vertical;
+      padding: 10px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      outline: 0;
+      background: rgba(255,255,255,.74);
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    textarea:focus { border-color: var(--mars); box-shadow: 0 0 0 3px rgba(207,77,63,.12); }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 33px;
+      padding: 0 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      background: var(--paper-strong);
+      color: var(--ink-soft);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .button:hover { border-color: var(--ink-faint); color: var(--ink); }
+    .button.primary { border-color: var(--mars); background: var(--mars); color: #fff; }
+    .button.primary:hover { background: var(--mars-deep); border-color: var(--mars-deep); }
+    .button:active { transform: translateY(1px); }
+
+    .demo-caption {
+      max-width: 1640px;
+      margin: 0 auto 15px;
+      padding: 0 5px;
+      color: #697178;
+      font-size: 11px;
+    }
+    .demo-caption strong { color: #343b40; }
+
+    @media (max-width: 1180px) {
+      .demo-shell { grid-template-columns: 198px 274px minmax(390px, 1fr) 402px; }
+      .reader-inner { padding-left: 34px; padding-right: 34px; }
+    }
+    @media (max-width: 980px) {
+      body { background: var(--paper); }
+      .demo-caption { margin: 12px 16px; }
+      .demo-shell { height: auto; min-height: 0; margin: 0; border: 0; border-radius: 0; grid-template-columns: 190px minmax(285px, 1fr); grid-template-rows: auto auto; }
+      .rail { grid-row: 1 / span 2; }
+      .reader { min-height: 760px; }
+      .desk { grid-column: 2; border-top: 1px solid var(--line); min-height: 620px; }
+    }
+    @media (max-width: 720px) {
+      .demo-caption { padding: 0 12px; line-height: 1.5; }
+      .demo-shell { display: block; }
+      .rail { display: none; }
+      .feed { border-right: 0; }
+      .feed-list { max-height: 360px; }
+      .reader-inner { padding: 25px 20px 55px; }
+      .reader h2 { font-size: 31px; }
+      .desk { min-height: 560px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-caption"><strong>Mars Reader / AI 写推文流程 Demo</strong>　交互原型 · 不会改动生产页面</div>
+  <main class="demo-shell" aria-label="Mars Reader 个人阅读工作台视觉演示">
+    <aside class="rail">
+      <div class="brand">
+        <img src="/favicon.svg?v=20260826-mars-no-orbit" width="35" height="35" loading="eager" decoding="sync" alt="Mars Reader 火星阅读器" />
+        <div class="brand-copy"><strong>Mars Reader</strong><span>Personal desk</span></div>
+      </div>
+      <div class="rail-scroll">
+        <section class="rail-section">
+          <p class="rail-label">阅读</p>
+          <button class="rail-item active" type="button"><span data-icon="newspaper"></span><span>全部</span><span class="count">148</span></button>
+          <button class="rail-item" type="button"><span data-icon="circle-dot"></span><span>未读</span><span class="count">125</span></button>
+          <button class="rail-item" type="button"><span data-icon="star"></span><span>收藏</span><span class="count">12</span></button>
+          <button class="rail-item" type="button"><span data-icon="pencil"></span><span>推文草稿</span><span class="count">7</span></button>
+          <button class="rail-item" type="button"><span data-icon="history"></span><span>历史</span></button>
+        </section>
+        <section class="rail-section">
+          <p class="rail-label">来源</p>
+          <button class="rail-item source-item" type="button"><i class="source-dot red"></i><span class="source-name">资讯 · BestBlog 精选</span></button>
+          <button class="rail-item source-item" type="button"><i class="source-dot blue"></i><span class="source-name">文章 · AI / 科技</span></button>
+          <button class="rail-item source-item" type="button"><i class="source-dot green"></i><span class="source-name">播客 · 长谈</span></button>
+        </section>
+      </div>
+      <div class="rail-footer"><i class="local-state"></i><span>本地阅读 · 14 天窗口</span></div>
+    </aside>
+
+    <section class="feed">
+      <header class="feed-head">
+        <div class="feed-title-row"><h1>最新</h1><span>148 篇</span></div>
+        <label class="feed-search"><span data-icon="search" class="icon small"></span><input placeholder="搜索文章…" /></label>
+        <div class="feed-tabs" role="tablist"><button class="feed-tab active" type="button">全部 <span>148</span></button><button class="feed-tab" type="button">未读 <span>125</span></button></div>
+      </header>
+      <div class="feed-list">
+        <button class="story active" type="button">
+          <div class="story-meta"><span class="story-source">What’s Next｜科技早知道</span><span>·</span><span>今天 18:42</span></div>
+          <h2>一个中国 FDE 的光环、落差与「救火」日常</h2>
+          <p>从一线 AI 工程师的经历，看技术落地里那些不在 Demo 里的工作。</p>
+          <div class="story-foot"><span>文章</span><span>未读</span><span class="pin" data-icon="pin"></span></div>
+        </button>
+        <button class="story" type="button">
+          <div class="story-meta"><span class="story-source">BestBlog 精选</span><span>·</span><span>今天 16:05</span></div>
+          <h2>为什么很多 AI 产品在真正进入团队后才暴露问题</h2>
+          <p>从演示效果到日常使用，中间还隔着一整套组织习惯。</p>
+          <div class="story-foot"><span>资讯</span><span>2 小时前</span></div>
+        </button>
+        <button class="story" type="button">
+          <div class="story-meta"><span class="story-source">泽平宏观</span><span>·</span><span>昨天 09:30</span></div>
+          <h2>当宏观预期开始切换，资产定价会先改变什么</h2>
+          <p>把市场判断拆成几个可以持续观察的变量。</p>
+          <div class="story-foot"><span>资讯</span><span>已读</span></div>
+        </button>
+        <button class="story" type="button">
+          <div class="story-meta"><span class="story-source">Latent Space</span><span>·</span><span>昨天 08:12</span></div>
+          <h2>从工具调用到可验证的智能体系统</h2>
+          <p>工程细节往往决定了一个想法能不能留下来。</p>
+          <div class="story-foot"><span>文章</span><span>已收藏</span></div>
+        </button>
+      </div>
+    </section>
+
+    <article class="reader">
+      <div class="reader-inner">
+        <div class="reader-topline"><span class="reader-label"><span data-icon="book-open-text" class="icon small"></span>原文</span><div class="reader-actions"><button class="icon-button" type="button" aria-label="收藏"><span data-icon="star"></span></button><button class="icon-button" type="button" aria-label="复制链接"><span data-icon="link"></span></button></div></div>
+        <h2>一个中国 FDE 的光环、落差与「救火」日常</h2>
+        <p class="reader-deck">FDE 看起来离 AI 很近，但真正的工作往往发生在技术、业务、流程和人的预期交叉处。</p>
+        <div class="reader-byline"><span>What’s Next｜科技早知道</span><span>·</span><span>2026-08-26</span><span>·</span><span>约 42 分钟</span></div>
+        <div class="rule"></div>
+        <div class="article-copy">
+          <p class="lead">FDE 最近很火，但真正让人感到落差的地方，不是模型又多会回答了一道题，而是它进入真实流程以后，很多问题会一起出现。</p>
+          <p>数据、权限、知识库、流程、老板的预期，还有客户对「买了 AI 就能立刻降本」的想象，都要有人接住。技术只是其中一层，救火反而成了日常。</p>
+          <div class="pull-quote">FDE 更像是披着 AI 外衣的系统工程师，离结果很近，也离现场的混乱很近。</div>
+          <p>这也是为什么这个岗位看起来像是技术岗，做起来却一直在技术、业务和组织之间来回切换。Demo 可以证明一个想法能跑，真正的交付还要证明它能被使用、被维护，而且出问题时有人知道下一步怎么办。</p>
+          <p>所以我更愿意把 FDE 理解成一种落地能力，而不是某几个工具的熟练度。能不能把复杂的事情拆开、讲清楚、推进下去，才是最后留下来的东西。</p>
+        </div>
+        <div class="reader-source-note">来源：What’s Next｜科技早知道 · 原文阅读区保留完整上下文；右侧写作区只把文章作为参考资料。</div>
+      </div>
+    </article>
+
+    <aside class="desk" aria-label="AI 写推文工作区">
+      <header class="desk-head">
+        <div>
+          <div class="desk-kicker">WRITING DESK</div>
+          <h2>AI 写推文</h2>
+        </div>
+        <div class="desk-head-actions">
+          <span class="demo-badge"><i></i>演示模式 · 未调用 API</span>
+          <button class="desk-icon-button" id="guideButton" type="button" aria-label="使用指南"><span data-icon="circle-help" class="icon small"></span></button>
+          <button class="desk-icon-button" type="button" aria-label="收起面板"><span data-icon="panel-right-close" class="icon small"></span></button>
+        </div>
+      </header>
+      <div class="guide-popover" id="guidePopover" hidden>
+        <strong>这三步是为了让 AI 先理解，再动笔</strong>
+        你的观点或原稿始终优先。文章只用于参考和核对；生成前可以修改 AI 的理解，生成中也可以随时停止。
+      </div>
+      <div class="desk-scroll">
+        <div class="reference">
+          <span data-icon="file-text" class="icon small"></span>
+          <div class="reference-copy"><strong>参考文章：一个中国 FDE 的光环、落差与「救火」日常</strong><span id="referenceText">文章内容可能已更新，建议重新获取上下文。</span></div>
+          <span class="reference-status" id="referenceStatus"><i></i><span>内容可能已更新</span></span>
+          <button class="desk-icon-button reference-refresh" id="refreshReference" type="button" aria-label="重新获取文章"><span data-icon="refresh-cw" class="icon small"></span></button>
+        </div>
+
+        <div class="workflow">
+          <aside class="step-rail" aria-label="写作步骤">
+            <button class="step-marker active" data-marker="1" type="button" aria-label="第 1 步">1</button>
+            <button class="step-marker" data-marker="2" type="button" aria-label="第 2 步">2</button>
+            <button class="step-marker" data-marker="3" type="button" aria-label="第 3 步">3</button>
+          </aside>
+
+          <div class="steps">
+            <section class="step-panel" data-step="1">
+              <button class="step-heading" type="button" aria-expanded="true">
+                <span class="step-heading-copy"><h3>你想写什么</h3><p>先把任务和你的真实内容说清楚</p></span>
+                <span data-icon="arrow-right" class="icon small step-chevron"></span>
+              </button>
+              <div class="step-content">
+                <div class="field">
+                  <span class="field-label">任务选择 <small>决定文章和你的内容谁优先</small></span>
+                  <div class="mode-grid" role="tablist" aria-label="写作任务">
+                    <button class="mode active" data-task="share" type="button"><strong>分享改写</strong><small>认同观点，换一种方式讲清楚</small></button>
+                    <button class="mode" data-task="polish" type="button"><strong>润色原稿</strong><small>以你的原稿为主，整理表达</small></button>
+                    <button class="mode" data-task="supplement" type="button"><strong>观点补全</strong><small>保留判断，补齐论证结构</small></button>
+                  </div>
+                </div>
+                <label class="field" for="myInput">
+                  <span class="field-label"><span id="inputLabel">我的观点 / 原稿</span><small id="inputRequirement">分享改写可留空</small></span>
+                  <textarea id="myInput" maxlength="2000">我觉得 FDE 最近很火，但真正难的不是会不会用 AI，而是能不能把技术、业务、流程和人的预期一起扛住。很多 Demo 看起来很亮，落地以后才发现，救火的日常比模型本身复杂得多。</textarea>
+                  <span class="field-label"><small></small><small id="inputCount">0 / 2000</small></span>
+                </label>
+                <label class="field" for="requirement">
+                  <span class="field-label">本次写作要求 <small>只影响这一次生成</small></span>
+                  <textarea class="requirement" id="requirement" maxlength="500" placeholder="例如：突出 FDE 的职业判断，写成 4 个编号要点，语气克制。"></textarea>
+                  <span class="field-label"><small></small><small id="requirementCount">0 / 500</small></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="step-panel" data-step="2">
+              <button class="step-heading" type="button" aria-expanded="true">
+                <span class="step-heading-copy"><h3>怎么写</h3><p>选择输出结构、语气和不越过的边界</p></span>
+                <span data-icon="arrow-right" class="icon small step-chevron"></span>
+              </button>
+              <div class="step-content">
+                <div class="field">
+                  <span class="field-label">输出形式</span>
+                  <div class="chip-grid" data-choice-group="format">
+                    <button class="choice-chip active" data-choice="短帖" type="button"><span data-icon="message-square-text" class="icon small"></span>短帖</button>
+                    <button class="choice-chip" data-choice="长帖" type="button"><span data-icon="file-text" class="icon small"></span>长帖</button>
+                    <button class="choice-chip" data-choice="编号要点" type="button"><span data-icon="hash" class="icon small"></span>编号要点</button>
+                    <button class="choice-chip" data-choice="Thread" type="button"><span data-icon="corner-down-left" class="icon small"></span>Thread</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <span class="field-label">语气风格</span>
+                  <div class="chip-grid" data-choice-group="tone">
+                    <button class="choice-chip active" data-choice="自然分享" type="button"><span data-icon="message-square-text" class="icon small"></span>自然分享</button>
+                    <button class="choice-chip" data-choice="克制分析" type="button"><span data-icon="sliders-horizontal" class="icon small"></span>克制分析</button>
+                    <button class="choice-chip" data-choice="观点鲜明" type="button"><span data-icon="send" class="icon small"></span>观点鲜明</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <span class="field-label">写作守则 <small>可按需调整</small></span>
+                  <div class="guardrail-grid">
+                    <button class="guardrail active" data-guard="voice" type="button"><span class="guardrail-head"><span data-icon="check-check" class="icon small"></span>保留我的判断</span><small>不替你下结论</small></button>
+                    <button class="guardrail active" data-guard="experience" type="button"><span class="guardrail-head"><span data-icon="check-check" class="icon small"></span>不编造经历</span><small>不虚构第一人称经验</small></button>
+                    <button class="guardrail active" data-guard="source" type="button"><span class="guardrail-head"><span data-icon="check-check" class="icon small"></span>文章只作参考</span><small>不把作者当成你</small></button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="step-panel" data-step="3">
+              <button class="step-heading" type="button" aria-expanded="true">
+                <span class="step-heading-copy"><h3>确认理解并起稿</h3><p>先看 AI 的理解，再决定是否生成</p></span>
+                <span data-icon="arrow-right" class="icon small step-chevron"></span>
+              </button>
+              <div class="step-content">
+                <div class="understanding" aria-live="polite">
+                  <div class="understanding-row"><strong>任务</strong><span id="understandingTask">基于文章观点，用新的方式写成一条分享推文</span></div>
+                  <div class="understanding-row"><strong>核心判断</strong><span id="understandingThesis">FDE 的难点不只在技术，而在组织、流程和落地预期的交叉处。</span></div>
+                  <div class="understanding-row"><strong>来源</strong><span id="understandingSource">以你的内容为取舍方向，文章补充背景，不虚构个人经历。</span></div>
+                  <div class="understanding-row"><strong>输出</strong><span id="understandingFormat">短帖 · 自然分享 · 2–4 个短段落</span></div>
+                </div>
+                <div class="quality-grid" aria-label="自然表达检查">
+                  <div class="quality-item"><span data-icon="check-check" class="icon small"></span>具体开头</div>
+                  <div class="quality-item"><span data-icon="check-check" class="icon small"></span>不话术化</div>
+                  <div class="quality-item"><span data-icon="check-check" class="icon small"></span>节奏有变化</div>
+                  <div class="quality-item"><span data-icon="check-check" class="icon small"></span>不制造经历</div>
+                </div>
+                <div class="step-actions">
+                  <button class="button" id="backToEdit" type="button"><span data-icon="arrow-left" class="icon small"></span>返回修改</button>
+                  <button class="button primary" id="generateButton" type="button"><span data-icon="sparkles" class="icon small"></span>确认并生成</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="generation-card" aria-live="polite">
+              <div class="generation-head"><strong>推文草稿</strong><span class="generation-meta" id="generationMeta">等待确认理解</span></div>
+              <div class="progress-row">
+                <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+                <span class="progress-value" id="progressValue">0%</span>
+                <button class="button" id="stopButton" type="button" disabled><span data-icon="x" class="icon small"></span>停止生成</button>
+              </div>
+              <div class="draft-wrap">
+                <div class="draft-head"><strong>可编辑草稿</strong><div class="draft-tools"><span class="draft-status" id="draftStatus">尚未生成</span><button id="regenerateButton" type="button"><span data-icon="refresh-cw" class="icon small"></span>重新生成</button><button id="copyButton" type="button"><span data-icon="copy" class="icon small"></span>复制</button><button id="clearButton" type="button"><span data-icon="trash-2" class="icon small"></span>清空</button></div></div>
+                <textarea class="draft" id="draftOutput" placeholder="确认上面的理解后，推文草稿会出现在这里。你也可以直接编辑。"></textarea>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <footer class="desk-foot">草稿只存在于这个演示页面 · 正式版将接入个人后台的 DeepSeek 配置</footer>
+    </aside>
+  </main>
+
+  <script>
+    (() => {
+      const icons = window.QM_LUCIDE_ICONS || {};
+      const ns = 'http://www.w3.org/2000/svg';
+      const makeIcon = (name) => {
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('stroke-linecap', 'round');
+        svg.setAttribute('stroke-linejoin', 'round');
+        svg.classList.add('icon');
+        (icons[name] || []).forEach(([tag, attrs]) => {
+          const node = document.createElementNS(ns, tag);
+          Object.entries(attrs || {}).forEach(([key, value]) => node.setAttribute(key, value));
+          svg.appendChild(node);
+        });
+        return svg;
+      };
+      document.querySelectorAll('[data-icon]').forEach(slot => {
+        const name = slot.dataset.icon;
+        const icon = makeIcon(name);
+        if (slot.classList.contains('small')) icon.classList.add('small');
+        slot.replaceWith(icon);
+      });
+
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+      const state = {
+        task: 'share',
+        format: '短帖',
+        tone: '自然分享',
+        generating: false,
+        timer: null,
+        saveTimer: null,
+      };
+      const taskCopy = {
+        share: { requirement: '分享改写可留空', placeholder: '分享改写可以不填；如果有想强调的角度，也可以写在这里。', task: '基于文章观点，用新的方式写成一条分享推文', source: '保留文章公共观点和事实，去掉作者私人经历，不保留原文链接。' },
+        polish: { requirement: '润色原稿需要填写', placeholder: '先写下你真实想表达的内容，AI 只整理逻辑和语气。', task: '以你的原稿为主，整理成更自然、更清楚的推文', source: '你的原稿是唯一的表达主体，文章只用于补充背景和核对事实。' },
+        supplement: { requirement: '观点补全需要填写', placeholder: '写下你的核心判断或半成品，AI 可以补齐论证但不替你立场。', task: '以你的观点为主，补齐文章中的论证和表达结构', source: '你的判断决定方向，文章只补充相关事实，不虚构个人经历。' },
+      };
+
+      const input = $('#myInput');
+      const requirement = $('#requirement');
+      const draft = $('#draftOutput');
+      const inputLabel = $('#inputLabel');
+      const inputRequirement = $('#inputRequirement');
+      const inputCount = $('#inputCount');
+      const requirementCount = $('#requirementCount');
+      const understandingTask = $('#understandingTask');
+      const understandingThesis = $('#understandingThesis');
+      const understandingSource = $('#understandingSource');
+      const understandingFormat = $('#understandingFormat');
+      const generationMeta = $('#generationMeta');
+      const draftStatus = $('#draftStatus');
+      const progressBar = $('#progressBar');
+      const progressValue = $('#progressValue');
+      const generateButton = $('#generateButton');
+      const stopButton = $('#stopButton');
+      const regenerateButton = $('#regenerateButton');
+
+      const now = () => new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      const updateCount = (node, value, max) => { node.textContent = `${value.length} / ${max}`; };
+      const selected = (group) => $(`[data-choice-group="${group}"] .choice-chip.active`)?.dataset.choice || '';
+
+      function updateUnderstanding() {
+        const copy = taskCopy[state.task];
+        const userText = input.value.trim();
+        const thesis = userText
+          ? userText.replace(/\s+/g, ' ').slice(0, 68) + (userText.length > 68 ? '…' : '')
+          : '围绕文章的核心观点重新组织表达，避免把作者的个人经历写成你的经历。';
+        understandingTask.textContent = copy.task;
+        understandingThesis.textContent = thesis;
+        understandingSource.textContent = copy.source;
+        understandingFormat.textContent = `${state.format} · ${state.tone} · ${state.format === '编号要点' ? '按观点拆成 3–5 点' : state.format === 'Thread' ? '按连续段落展开' : '2–4 个短段落'}`;
+      }
+
+      function setActiveInGroup(button, selector) {
+        $$(selector, button.parentElement).forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+      }
+
+      function setPanelState(step, collapsed) {
+        const panel = $(`.step-panel[data-step="${step}"]`);
+        if (!panel) return;
+        panel.classList.toggle('collapsed', collapsed);
+        $('.step-heading', panel).setAttribute('aria-expanded', String(!collapsed));
+      }
+
+      function setMarkerState(step) {
+        $$('.step-marker').forEach(marker => {
+          const current = Number(marker.dataset.marker);
+          marker.classList.toggle('active', current === step);
+          marker.classList.toggle('complete', current < step);
+        });
+      }
+
+      function setTask(task) {
+        state.task = task;
+        const copy = taskCopy[task];
+        inputRequirement.textContent = copy.requirement;
+        input.placeholder = copy.placeholder;
+        inputLabel.textContent = task === 'share' ? '我的观点 / 原稿' : task === 'polish' ? '我的原稿' : '我的核心观点 / 原稿';
+        updateUnderstanding();
+        setMarkerState(1);
+      }
+
+      function buildDraft() {
+        const userText = input.value.trim();
+        const firstSentence = userText.split(/[。！？!?]/)[0].trim();
+        const opening = firstSentence ? (firstSentence.length > 88 ? `${firstSentence.slice(0, 88)}…` : firstSentence) : 'FDE 最近很火，但真正难的不是会不会调用 AI';
+        if (state.format === '编号要点') {
+          return `1. ${opening}。真正的难点，是把技术、业务、流程和人的预期一起扛住。\n\n2. 很多 Demo 看起来很亮，落地以后才会发现，知识库、权限、流程和协作才是每天要处理的部分。\n\n3. FDE 更像是披着 AI 外衣的系统工程师，既要懂技术，也要能把业务问题翻译成可执行的工作。\n\n4. 所以这个岗位的价值，不只是把模型接上，而是让一个想法真的能在组织里跑起来。`;
+        }
+        if (state.format === 'Thread') {
+          return `1/4 ${opening}。\n\n2/4 真正的落地难点，往往不在模型本身，而在数据、流程、权限和人的预期。\n\n3/4 FDE 需要把这些东西接起来，很多时候还要负责把现场的火先灭掉。\n\n4/4 这也是我觉得这个角色有意思的地方：它不是展示 AI 有多聪明，而是让一套系统真的能工作。`;
+        }
+        if (state.task === 'polish') {
+          return `${opening}。\n\n我想表达的其实很简单，FDE 不是会几个模型调用就够了。真正难的是把技术、业务和流程放到同一个交付里，面对那些 Demo 里看不见的细节。\n\n这也是我现在更在意的判断，AI 落地最后拼的，还是工程能力和对业务的理解。`;
+        }
+        return `${opening}。\n\nFDE 真正难的地方，不只是把 AI 做出来，而是把技术、业务、流程和人的预期一起扛住。很多东西在 Demo 里很亮，进入日常以后才知道，救火的部分才是工作的大头。\n\n所以我越来越觉得，FDE 更像是披着 AI 外衣的系统工程师，价值不在于把模型接上，而在于让一个想法真的能在组织里跑起来。`;
+      }
+
+      function setProgress(value) {
+        progressBar.style.width = `${value}%`;
+        progressValue.textContent = `${value}%`;
+      }
+
+      function finishGeneration() {
+        state.generating = false;
+        state.timer = null;
+        setProgress(100);
+        draft.value = buildDraft();
+        generationMeta.textContent = '已生成 · 可继续编辑';
+        draftStatus.textContent = `已自动保存 ${now()}`;
+        generateButton.disabled = false;
+        regenerateButton.disabled = false;
+        stopButton.disabled = true;
+      }
+
+      function startGeneration() {
+        if (state.generating) return;
+        if (state.task !== 'share' && !input.value.trim()) {
+          generationMeta.textContent = '请先填写你的观点或原稿';
+          setPanelState(1, false);
+          input.focus();
+          return;
+        }
+        state.generating = true;
+        setMarkerState(3);
+        generationMeta.textContent = '正在理解你的要求…';
+        draftStatus.textContent = '生成中…';
+        generateButton.disabled = true;
+        regenerateButton.disabled = true;
+        stopButton.disabled = false;
+        let progress = 0;
+        setProgress(progress);
+        state.timer = window.setInterval(() => {
+          progress = Math.min(progress + 20, 100);
+          setProgress(progress);
+          generationMeta.textContent = progress < 100 ? (progress < 60 ? '正在提取文章观点…' : '正在按你的要求组织表达…') : '正在保存草稿…';
+          if (progress >= 100) {
+            window.clearInterval(state.timer);
+            window.setTimeout(finishGeneration, 240);
+          }
+        }, 360);
+      }
+
+      function stopGeneration() {
+        if (!state.generating) return;
+        window.clearInterval(state.timer);
+        state.timer = null;
+        state.generating = false;
+        generationMeta.textContent = '已停止，可继续修改要求';
+        draftStatus.textContent = '生成已停止';
+        generateButton.disabled = false;
+        regenerateButton.disabled = false;
+        stopButton.disabled = true;
+      }
+
+      $$('.feed-tab').forEach(button => button.addEventListener('click', () => {
+        setActiveInGroup(button, '.feed-tab');
+      }));
+      $$('.rail-item').forEach(button => button.addEventListener('click', () => {
+        setActiveInGroup(button, '.rail-item');
+      }));
+      $$('.mode').forEach(button => button.addEventListener('click', () => {
+        setActiveInGroup(button, '.mode');
+        setTask(button.dataset.task);
+      }));
+      $$('.choice-chip').forEach(button => button.addEventListener('click', () => {
+        setActiveInGroup(button, '.choice-chip');
+        const group = button.closest('[data-choice-group]')?.dataset.choiceGroup;
+        if (group === 'format') state.format = button.dataset.choice;
+        if (group === 'tone') state.tone = button.dataset.choice;
+        updateUnderstanding();
+      }));
+      $$('.guardrail').forEach(button => button.addEventListener('click', () => button.classList.toggle('active')));
+      $$('.step-heading').forEach(button => button.addEventListener('click', () => {
+        const panel = button.closest('.step-panel');
+        const collapsed = panel.classList.toggle('collapsed');
+        button.setAttribute('aria-expanded', String(!collapsed));
+        setMarkerState(Number(panel.dataset.step));
+      }));
+      $$('.step-marker').forEach(marker => marker.addEventListener('click', () => {
+        const step = Number(marker.dataset.marker);
+        setPanelState(step, false);
+        setMarkerState(step);
+      }));
+      input.addEventListener('input', () => { updateCount(inputCount, input.value, 2000); updateUnderstanding(); });
+      requirement.addEventListener('input', () => { updateCount(requirementCount, requirement.value, 500); updateUnderstanding(); });
+      $('#generateButton').addEventListener('click', startGeneration);
+      $('#stopButton').addEventListener('click', stopGeneration);
+      $('#regenerateButton').addEventListener('click', startGeneration);
+      $('#backToEdit').addEventListener('click', () => { setPanelState(1, false); setMarkerState(1); input.focus(); });
+      $('#refreshReference').addEventListener('click', () => {
+        $('#referenceStatus').classList.add('fresh');
+        $('#referenceStatus').innerHTML = '<i></i><span>上下文已更新</span>';
+        $('#referenceText').textContent = '已重新获取文章内容，生成时会使用最新上下文。';
+      });
+      $('#guideButton').addEventListener('click', () => {
+        const popover = $('#guidePopover');
+        popover.hidden = !popover.hidden;
+      });
+      $('#copyButton').addEventListener('click', async () => {
+        if (!draft.value.trim()) { draftStatus.textContent = '没有可复制的草稿'; return; }
+        try { await navigator.clipboard.writeText(draft.value); } catch { draft.select(); document.execCommand('copy'); }
+        draftStatus.textContent = '已复制到剪贴板';
+      });
+      $('#clearButton').addEventListener('click', () => {
+        draft.value = '';
+        draftStatus.textContent = '草稿已清空';
+      });
+      draft.addEventListener('input', () => {
+        draftStatus.textContent = '正在保存…';
+        window.clearTimeout(state.saveTimer);
+        state.saveTimer = window.setTimeout(() => { draftStatus.textContent = `已自动保存 ${now()}`; }, 500);
+      });
+
+      updateCount(inputCount, input.value, 2000);
+      updateCount(requirementCount, requirement.value, 500);
+      updateUnderstanding();
+    })();
+  </script>
+</body>
+</html>

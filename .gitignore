@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+.env
+.env.local
+.env.*
+!.env.example
+data/cache.json
+data/state.json
+data/insights.json
+data/favicons.json
+data/qmreader.sqlite*
+data/*.png
+data/*.log

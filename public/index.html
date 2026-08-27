@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mars Reader · RSS 阅读器</title>
+  <link rel="alternate" type="application/rss+xml" title="Mars Reader 公开资产 RSS" href="https://rss.qiaomu.ai/assets.xml" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260826-mars-no-orbit" />
+  <link rel="shortcut icon" href="/favicon.svg?v=20260826-mars-no-orbit" />
+  <meta name="theme-color" content="#281014" />
+  <link rel="stylesheet" href="/styles.css?v=191" />
+  <meta name="description" content="火星阅读器：围绕 RSS 文章沉淀中文改写、人工点评和文章对话的公开阅读站。" />
+  <link rel="canonical" href="https://rss.qiaomu.ai/" />
+  <meta property="og:site_name" content="Mars Reader" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Mars Reader · RSS 阅读器" />
+  <meta property="og:description" content="火星阅读器：围绕 RSS 文章沉淀中文改写、人工点评和文章对话的公开阅读站。" />
+  <meta property="og:url" content="https://rss.qiaomu.ai/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Mars Reader · RSS 阅读器" />
+  <meta name="twitter:description" content="火星阅读器：围绕 RSS 文章沉淀中文改写、人工点评和文章对话的公开阅读站。" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Mars Reader","url":"https://rss.qiaomu.ai/","description":"火星阅读器：围绕 RSS 文章沉淀中文改写、人工点评和文章对话的公开阅读站。"}</script>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (document.querySelector('script[data-qm-analytics]')) return;
+        const config = document.querySelector('meta[name="qmreader-analytics"]');
+        const src = config?.dataset.src || '';
+        const websiteId = config?.dataset.websiteId || '';
+        if (!src || !websiteId) return;
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.dataset.qmAnalytics = 'true';
+        script.dataset.websiteId = websiteId;
+        script.dataset.domains = config?.dataset.domains || location.hostname;
+        document.head.appendChild(script);
+      }, 2000);
+    }, { once: true });
+  </script>
+</head>
+<body data-theme="light">
+  <div id="app">
+    <!-- ===== Sidebar ===== -->
+    <aside id="sidebar">
+      <div class="brand">
+        <button id="brand-home" class="brand-home" type="button" title="返回全部" aria-label="返回全部">
+          <img class="brand-logo" src="/favicon.svg?v=20260826-mars-no-orbit" alt="Mars Reader 火星阅读器" />
+          <span class="brand-name">Mars Reader</span>
+        </button>
+        <button id="sidebar-toggle" class="icon-btn" title="收起左侧栏" aria-label="收起左侧栏"><span data-qm-icon="panel-left-close"></span></button>
+        <button id="theme-toggle" class="icon-btn" title="切换主题" aria-label="切换主题"><span data-qm-icon="sun-moon"></span></button>
+      </div>
+
+      <div class="views">
+        <button class="view-btn active" data-view="all"><span class="view-ico" data-qm-icon="newspaper"></span><span class="view-label">全部</span><span class="count" id="count-all"></span></button>
+        <button class="view-btn" data-view="unread"><span class="view-ico" data-qm-icon="circle-dot"></span><span class="view-label">未读</span><span class="count" id="count-unread"></span></button>
+        <button class="view-btn" data-view="hot" hidden><span class="view-ico" data-qm-icon="flame"></span><span class="view-label">热门</span><span class="count" id="count-hot"></span></button>
+        <button class="view-btn" data-view="contributors" hidden><span class="view-ico" data-qm-icon="users"></span><span class="view-label">贡献榜</span><span class="count" id="count-contributors"></span></button>
+        <button class="view-btn" data-view="starred"><span class="view-ico" data-qm-icon="star"></span><span class="view-label">收藏</span><span class="count" id="count-starred"></span></button>
+        <button class="view-btn" data-view="history"><span class="view-ico" data-qm-icon="history"></span><span class="view-label">历史</span><span class="count" id="count-history"></span></button>
+        <button id="tweet-drafts-nav" class="view-btn" data-view="tweet-drafts" title="推文草稿" aria-label="推文草稿"><span class="view-ico" data-qm-icon="pencil"></span><span class="view-label">推文草稿</span><span class="count" id="count-tweet-drafts"></span></button>
+      </div>
+
+      <div class="sidebar-actions">
+        <button id="submit-link-open" class="submit-link-open sidebar-submit-link" type="button" title="提交链接" aria-label="提交链接" hidden>
+          <span class="submit-icon" data-qm-icon="plus"></span>
+          <span class="submit-label">提交链接</span>
+        </button>
+      </div>
+
+      <div id="asset-dashboard" class="asset-dashboard hidden">
+        <button id="asset-dashboard-open" class="asset-dashboard-open" type="button">
+          <span class="asset-dashboard-kicker">公开资产</span>
+          <strong id="asset-dashboard-total">0 条</strong>
+          <span id="asset-dashboard-recent">暂无沉淀</span>
+        </button>
+        <button id="asset-dashboard-helpful" class="asset-dashboard-action" type="button">
+          <span>有用优先</span>
+          <strong id="asset-dashboard-helpful-count">0</strong>
+        </button>
+        <div class="asset-dashboard-grid" aria-label="资产类型筛选">
+          <button class="asset-stat asset-stat-translation" type="button" data-asset-filter="translation" hidden>
+            <span>改写</span><strong id="asset-stat-translation">0</strong>
+          </button>
+          <button class="asset-stat asset-stat-rewrite" type="button" data-asset-filter="rewrite">
+            <span>改写</span><strong id="asset-stat-rewrite">0</strong>
+          </button>
+          <button class="asset-stat asset-stat-annotations" type="button" data-asset-filter="annotations">
+            <span>划线</span><strong id="asset-stat-annotations">0</strong>
+          </button>
+          <button class="asset-stat asset-stat-comments" type="button" data-asset-filter="comments">
+            <span>点评</span><strong id="asset-stat-comments">0</strong>
+          </button>
+          <button class="asset-stat asset-stat-chat" type="button" data-asset-filter="chat">
+            <span>对话</span><strong id="asset-stat-chat">0</strong>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-scroll" id="feed-groups"><!-- groups injected --></div>
+
+      <div class="account-strip">
+        <button id="auth-open" class="account-card" type="button">
+          <span class="account-avatar" id="guest-avatar">M</span>
+          <span class="account-text">
+            <strong>登录 / 注册</strong>
+            <span>同步阅读与贡献</span>
+          </span>
+        </button>
+        <button id="account-info" class="account-card account-info hidden" type="button"></button>
+        <button id="account-settings-open" class="icon-btn account-settings hidden" type="button" title="账户设置" aria-label="账户设置">
+          <span data-qm-icon="settings"></span><b id="notification-count" class="hidden">0</b>
+        </button>
+        <div id="account-menu" class="account-menu hidden" role="menu" aria-label="账户菜单">
+          <button id="account-menu-dashboard" type="button" role="menuitem">我的后台</button>
+          <button id="account-menu-profile" type="button" role="menuitem" hidden>我的贡献</button>
+          <button id="account-menu-admin" class="hidden" type="button" role="menuitem">系统后台</button>
+          <button id="account-menu-password" type="button" role="menuitem">修改密码</button>
+          <button id="account-menu-logout" type="button" role="menuitem">退出登录</button>
+        </div>
+      </div>
+
+      <div class="sidebar-footer hidden">
+        <button id="refresh-btn" class="ghost-btn"><span data-qm-icon="refresh-cw"></span><span class="button-label">刷新全部</span></button>
+        <button id="manage-btn" class="ghost-btn"><span data-qm-icon="settings"></span><span class="button-label">管理源</span></button>
+      </div>
+    </aside>
+
+    <!-- ===== Entry list ===== -->
+    <section id="entry-pane">
+      <header class="pane-header">
+        <div class="pane-title" id="list-title">全部</div>
+        <div class="pane-actions">
+          <button id="source-refresh-btn" class="icon-btn source-refresh-btn hidden" type="button" title="检查当前信息源更新" aria-label="检查当前信息源更新"><span data-qm-icon="refresh-cw"></span></button>
+          <span id="source-refresh-status" class="source-refresh-status hidden" role="status" aria-live="polite"></span>
+          <input id="search" type="search" placeholder="搜索文章…" />
+          <button id="mark-read-btn" class="icon-btn" title="全部标为已读" aria-label="全部标为已读"><span data-qm-icon="check-check"></span></button>
+        </div>
+      </header>
+      <div id="list-scope-bar" class="list-scope-bar" role="tablist" aria-label="文章列表模式">
+        <button class="list-scope-btn active" type="button" data-list-scope="latest">最新</button>
+        <button class="list-scope-btn" type="button" data-list-scope="assets" hidden>已改写资产</button>
+        <button class="list-scope-btn" type="button" data-list-scope="hot" hidden>热门</button>
+        <button class="list-scope-btn" type="button" data-list-scope="unread">未读</button>
+      </div>
+      <div id="entry-pane-tabs" class="entry-pane-tabs hidden" role="tablist" aria-label="全部视图">
+        <button class="entry-pane-tab active" type="button" data-home-tab="entries">文章列表 <span id="home-entry-count">0</span></button>
+        <button class="entry-pane-tab" type="button" data-home-tab="assets">已改写资产 <span id="home-asset-count">0</span></button>
+      </div>
+      <div id="asset-activity-strip" class="asset-activity-strip hidden"></div>
+      <div id="entry-list" class="entry-list"></div>
+    </section>
+
+    <div id="list-resizer" class="pane-resizer" role="separator" aria-orientation="vertical" aria-label="调整文章列表宽度" tabindex="0"></div>
+    <button id="left-collapse-toggle" class="icon-btn left-collapse-toggle" type="button" title="收起左侧" aria-label="收起左侧" aria-pressed="false">
+      <span data-qm-icon="panel-left-close"></span>
+    </button>
+
+    <!-- ===== Reader ===== -->
+    <section id="reader-pane">
+      <div id="reader-empty" class="reader-empty">
+        <img class="empty-logo" src="/favicon.svg?v=20260826-mars-no-orbit" alt="Mars Reader 火星阅读器" />
+        <p>选择一篇文章开始阅读</p>
+      </div>
+      <article id="reader" class="reader hidden">
+        <nav id="reader-signal-rail" class="reader-signal-rail" aria-label="文章反馈">
+          <button id="reader-rail-like" class="reader-signal-btn" type="button" title="点赞这篇文章" aria-label="点赞这篇文章" hidden>
+            <span class="reader-signal-icon" data-qm-icon="thumbs-up"></span>
+            <span id="reader-rail-like-count" class="reader-signal-count">0</span>
+          </button>
+          <button id="reader-rail-star" class="reader-signal-btn" type="button" title="收藏这篇文章" aria-label="收藏这篇文章">
+            <span class="reader-signal-icon" data-qm-icon="star"></span>
+            <span id="reader-rail-star-count" class="reader-signal-count">0</span>
+          </button>
+          <button id="reader-rail-comment" class="reader-signal-btn" type="button" title="查看点评" aria-label="查看点评">
+            <span class="reader-signal-icon" data-qm-icon="message-square-text"></span>
+            <span id="reader-rail-comment-count" class="reader-signal-count">0</span>
+          </button>
+          <button id="reader-rail-annotation" class="reader-signal-btn" type="button" title="查看划线点评" aria-label="查看划线点评" hidden>
+            <span class="reader-signal-icon" data-qm-icon="highlighter"></span>
+            <span id="reader-rail-annotation-count" class="reader-signal-count">0</span>
+          </button>
+          <button id="reader-rail-rewrite" class="reader-signal-btn" type="button" title="中文改写" aria-label="中文改写">
+            <span class="reader-signal-icon" data-qm-icon="sparkles"></span>
+          </button>
+          <button id="reader-rail-translate" class="reader-signal-btn" type="button" title="中文改写（对照）" aria-label="中文改写（对照）">
+            <span class="reader-signal-icon" data-qm-icon="languages"></span>
+          </button>
+        </nav>
+        <header class="reader-head">
+          <div class="reader-kicker-row">
+            <div class="reader-source" id="reader-source"></div>
+            <div class="reader-meta-row">
+              <div class="reader-meta" id="reader-meta"></div>
+              <span id="reader-view-count" class="reader-view-count"></span>
+            </div>
+          </div>
+          <div class="reader-title-row">
+            <div class="reader-title-copy">
+              <h1 id="reader-title"><a id="reader-title-link" class="reader-title-link" target="_blank" rel="noopener"></a></h1>
+              <div id="reader-title-zh" class="reader-title-zh hidden"><a id="reader-title-original-link" class="reader-title-link" target="_blank" rel="noopener"></a></div>
+            </div>
+          </div>
+          <div id="reader-assets" class="asset-badges reader-asset-badges hidden"></div>
+          <div id="reader-asset-summary" class="reader-asset-summary hidden"></div>
+          <div class="reader-toolbar">
+            <div class="reader-toolbar-main">
+              <button id="reader-tweet-open" class="ghost-btn reader-toolbar-icon reader-tweet-open" type="button" title="打开 AI 写推文" aria-label="打开 AI 写推文"><span data-qm-icon="sparkles"></span><span class="button-label">AI 写推文</span></button>
+              <button id="reader-copy-link" class="ghost-btn reader-toolbar-icon" type="button" title="复制文章内容" aria-label="复制文章内容"><span data-qm-icon="file-text"></span><span class="button-label">复制文章内容</span></button>
+              <button id="reader-star" class="reader-action-pill" type="button" aria-label="收藏这篇文章"></button>
+              <button id="reader-like" class="reader-action-pill" type="button" aria-label="点赞这篇文章" hidden></button>
+              <button id="reader-prefs-toggle" class="ghost-btn reader-prefs-toggle reader-toolbar-icon" type="button" title="字体设置" aria-label="字体设置" aria-expanded="false"><span data-qm-icon="sliders-horizontal"></span><span class="button-label">字体设置</span></button>
+              <button id="reader-immersive" class="ghost-btn reader-immersive-toggle reader-toolbar-icon" type="button" aria-pressed="false" title="沉浸阅读" aria-label="沉浸阅读"><span data-qm-icon="maximize-2"></span><span class="button-label">沉浸阅读</span></button>
+            </div>
+            <div class="reader-toolbar-admin">
+              <button id="reader-delete" class="ghost-btn danger reader-delete reader-toolbar-icon hidden" type="button" title="删除页面" aria-label="删除页面"><span data-qm-icon="trash-2"></span><span class="button-label">删除页面</span></button>
+            </div>
+          </div>
+          <div id="reader-preferences" class="reader-preferences hidden" aria-label="字体设置">
+            <div class="reader-pref-head">
+              <strong>字体设置</strong>
+              <button id="reader-prefs-close" class="icon-btn" type="button" title="关闭字体设置" aria-label="关闭字体设置"><span data-qm-icon="x"></span></button>
+            </div>
+            <div class="reader-pref-grid">
+              <div class="reader-pref-group" role="group" aria-label="字号">
+                <button id="reader-font-size-down" class="reader-pref-icon" type="button" title="减小字号" aria-label="减小字号"><span data-qm-icon="a-arrow-down"></span></button>
+                <output id="reader-font-size-value" class="reader-pref-value">16.5</output>
+                <button id="reader-font-size-up" class="reader-pref-icon" type="button" title="增大字号" aria-label="增大字号"><span data-qm-icon="a-arrow-up"></span></button>
+              </div>
+              <label class="reader-pref-label">
+                <span>行高</span>
+                <input id="reader-line-height" type="range" min="1.65" max="2.05" step="0.05" />
+              </label>
+              <label class="reader-pref-label reader-pref-width">
+                <span>栏宽</span>
+                <input id="reader-measure" type="range" min="56" max="84" step="2" />
+              </label>
+              <label class="reader-pref-select-label">
+                <span>字体</span>
+                <select id="reader-font-family" aria-label="阅读字体">
+                  <option value="default">默认混排</option>
+                  <option value="pingfang">苹方黑体</option>
+                  <option value="song">宋体</option>
+                  <option value="kai">楷体</option>
+                  <option value="serif">衬线</option>
+                  <option value="mono">等宽</option>
+                  <option value="hei">系统黑体</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </header>
+        <div id="reader-audio"></div>
+        <div class="reader-tabs" role="tablist" aria-label="文章阅读模式">
+          <button class="reader-tab active" type="button" data-tab="original">原文</button>
+          <button class="reader-tab" type="button" data-tab="rewrite">中文改写</button>
+        </div>
+        <details id="reader-toc" class="reader-toc hidden">
+          <summary>目录</summary>
+          <nav id="reader-toc-list" aria-label="文章目录"></nav>
+        </details>
+        <section id="reader-original-panel" class="reader-tab-panel annotation-surface-panel" data-annotation-surface="original">
+          <div id="reader-content" class="reader-content"></div>
+          <aside id="annotation-margin-original" class="annotation-margin" aria-label="原文划线讨论"></aside>
+        </section>
+        <section id="reader-rewrite-panel" class="reader-tab-panel annotation-surface-panel hidden" data-annotation-surface="rewrite">
+          <div class="reader-section-head">
+            <span id="rewrite-section-label">中文改写</span>
+            <div class="reader-section-actions">
+              <button id="rewrite-helpful" class="asset-helpful-btn hidden" type="button" aria-pressed="false">有用</button>
+              <button id="rewrite-copy" class="icon-btn reader-section-icon hidden" type="button" title="复制中文改写" aria-label="复制中文改写"><span data-qm-icon="copy"></span></button>
+              <button id="reader-rewrite" class="ghost-btn primary reader-rewrite-action" type="button">生成</button>
+            </div>
+          </div>
+          <div id="rewrite-meta" class="asset-meta-line hidden"></div>
+          <div id="rewrite-status" class="rewrite-status" role="status" aria-live="polite"></div>
+          <div id="rewrite-content" class="rewrite-content"></div>
+          <div id="rewrite-empty" class="asset-empty hidden">
+            <p>这篇文章还没有中文改写。</p>
+          </div>
+          <aside id="annotation-margin-rewrite" class="annotation-margin" aria-label="中文改写划线讨论"></aside>
+        </section>
+        <section id="reader-translation" class="reader-translation reader-tab-panel annotation-surface-panel hidden" data-annotation-surface="translation">
+          <div class="reader-section-head">
+              <span>中文改写（对照）</span>
+            <div class="reader-section-actions">
+              <span id="translation-meta"></span>
+              <select id="translation-profile-select" class="ai-profile-select" title="选择用于中文改写（对照）的模型" aria-label="选择用于中文改写（对照）的模型"></select>
+              <button id="translation-helpful" class="asset-helpful-btn hidden" type="button" aria-pressed="false">有用</button>
+              <button id="translation-view-toggle" class="ghost-btn hidden" type="button" aria-pressed="false">对照</button>
+              <button id="translation-copy" class="ghost-btn hidden" type="button"><span data-qm-icon="copy"></span><span class="button-label">复制中文改写（对照）</span></button>
+              <button id="reader-bilingual" class="ghost-btn primary" type="button">生成中文改写（对照）</button>
+            </div>
+          </div>
+          <div id="translation-list" class="translation-list"></div>
+          <div id="translation-empty" class="asset-empty hidden">
+            <p>这篇文章还没有中文改写（对照）。</p>
+          </div>
+          <aside id="annotation-margin-translation" class="annotation-margin" aria-label="中文改写（对照）划线讨论"></aside>
+        </section>
+        <section id="reader-annotations" class="reader-annotations">
+          <div class="reader-section-head">
+            <span>划线点评</span>
+            <div class="annotation-head-tools">
+              <span id="annotations-count"></span>
+              <select id="annotation-surface-filter" class="annotation-surface-filter" aria-label="筛选划线点评">
+                <option value="all">全部</option>
+                <option value="original">原文</option>
+                <option value="rewrite">中文改写</option>
+                <option value="translation">中文改写（对照）</option>
+              </select>
+              <button id="annotation-discussed-toggle" class="ghost-btn" type="button" aria-pressed="false">只看讨论段落</button>
+            </div>
+          </div>
+          <div id="annotation-nav" class="annotation-nav"></div>
+          <div id="annotations-list" class="annotations-list"></div>
+        </section>
+        <section id="reader-comments" class="reader-comments">
+          <div class="reader-section-head">
+            <span>人工点评</span>
+            <div class="comment-head-tools">
+              <span id="comments-count"></span>
+              <div class="comment-sort" aria-label="点评排序">
+                <button type="button" class="comment-sort-btn" data-comment-sort="helpful">有用</button>
+                <button type="button" class="comment-sort-btn" data-comment-sort="latest">最新</button>
+              </div>
+            </div>
+          </div>
+          <div id="comments-list" class="comments-list"></div>
+          <div id="comment-gate" class="asset-gate hidden">
+            <button id="comment-login" class="ghost-btn" type="button">登录后发布点评</button>
+          </div>
+          <form id="comment-form" class="comment-form">
+            <div id="comment-tools" class="comment-tools" aria-label="点评模板">
+              <button type="button" class="comment-template" data-comment-template="insight">观点</button>
+              <button type="button" class="comment-template" data-comment-template="question">疑问</button>
+              <button type="button" class="comment-template" data-comment-template="action">行动</button>
+              <button type="button" class="comment-template" data-comment-template="quote">引用</button>
+              <button type="button" class="comment-template" data-comment-template="source">资料</button>
+            </div>
+            <textarea id="comment-input" rows="2" placeholder="写下你的人工点评..."></textarea>
+            <button id="comment-send" class="ghost-btn" type="submit">发布</button>
+          </form>
+        </section>
+        <div id="annotation-popover" class="annotation-popover hidden" role="dialog" aria-label="划线点评">
+          <div class="annotation-popover-quote" id="annotation-popover-quote"></div>
+          <textarea id="annotation-popover-input" rows="3" placeholder="补充点评，可留空只划线…"></textarea>
+          <div class="annotation-popover-actions">
+            <button id="annotation-popover-copy" class="ghost-btn annotation-popover-copy" type="button">复制</button>
+            <button id="annotation-popover-send-ai" class="ghost-btn" type="button">发给AI</button>
+            <button id="annotation-popover-submit" class="ghost-btn primary" type="button">划线/点评</button>
+          </div>
+        </div>
+      </article>
+      <section id="my-dashboard-page" class="workspace-page dashboard-page hidden">
+        <header class="workspace-page-head">
+          <div>
+            <h1>个人后台</h1>
+            <p>编辑公开主页、查看通知和管理你沉淀过的资产。</p>
+          </div>
+          <div class="my-assets-header-actions">
+            <a id="my-public-profile-link" class="ghost-btn my-public-profile-link hidden" href="#" target="_blank" rel="noopener">公开页</a>
+            <a id="my-public-rss-link" class="ghost-btn my-public-rss-link hidden" href="#" target="_blank" rel="noopener">RSS</a>
+            <button class="icon-btn" id="my-comments-close" title="返回阅读器" aria-label="返回阅读器"><span data-qm-icon="arrow-left"></span></button>
+          </div>
+        </header>
+        <div class="dashboard-tabs" role="tablist" aria-label="个人后台">
+          <button class="dashboard-tab active" type="button" data-dashboard-tab="profile">个人资料</button>
+          <button class="dashboard-tab" type="button" data-dashboard-tab="ai">AI 设置</button>
+          <button class="dashboard-tab" type="button" data-dashboard-tab="contributions" hidden>我的贡献</button>
+        </div>
+        <section id="dashboard-profile-panel" class="dashboard-panel">
+          <section class="profile-dashboard">
+            <div class="profile-editor">
+              <label class="profile-avatar-picker" title="上传头像">
+                <input id="profile-avatar-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+                <span id="profile-avatar-preview" class="profile-avatar-preview">M</span>
+              </label>
+              <div class="profile-fields">
+                <label>
+                  <span>显示名</span>
+                  <input id="profile-display-name" type="text" maxlength="40" placeholder="你的名字" />
+                </label>
+                <label>
+                  <span>简介</span>
+                  <textarea id="profile-bio" rows="2" maxlength="280" placeholder="一句话介绍你关注什么、擅长什么"></textarea>
+                </label>
+                <div class="profile-reader-setting">
+                  <span class="profile-setting-label">打开文章</span>
+                  <div class="profile-reader-tabs" role="radiogroup" aria-label="打开文章默认显示">
+                    <button class="profile-reader-tab active" type="button" role="radio" data-profile-reader-tab="original" aria-checked="true">原文</button>
+                    <button class="profile-reader-tab" type="button" role="radio" data-profile-reader-tab="rewrite" aria-checked="false">中文改写</button>
+                  </div>
+                </div>
+                <div class="profile-links-head">
+                  <span>喜欢的链接</span>
+                  <button id="profile-link-add" class="ghost-btn" type="button">添加链接</button>
+                </div>
+                <div id="profile-links-editor" class="profile-links-editor"></div>
+                <div class="profile-actions">
+                  <button id="profile-save" class="ghost-btn primary" type="button">保存资料</button>
+                </div>
+              </div>
+            </div>
+            <div class="profile-admin-actions hidden" id="profile-admin-actions">
+              <span>管理员</span>
+              <button id="profile-refresh-btn" class="ghost-btn" type="button">刷新全部</button>
+              <button id="profile-manage-btn" class="ghost-btn" type="button">管理源</button>
+            </div>
+            <div class="profile-notifications">
+              <div class="profile-panel-head">
+                <span>通知</span>
+                <button id="notifications-read" class="ghost-btn" type="button">全部已读</button>
+              </div>
+              <div id="notification-list" class="notification-list"></div>
+            </div>
+          </section>
+        </section>
+        <section id="dashboard-ai-panel" class="dashboard-panel hidden">
+          <div id="dashboard-ai-mount" class="dashboard-ai-mount"></div>
+        </section>
+        <section id="dashboard-contributions-panel" class="dashboard-panel hidden">
+          <div class="my-asset-tabs" role="tablist" aria-label="我的资产类型">
+            <button class="my-asset-tab active" type="button" data-my-asset-tab="rewrite">改写 <span id="my-rewrite-count">0</span></button>
+            <button class="my-asset-tab" type="button" data-my-asset-tab="annotations" hidden>划线 <span id="my-annotations-count">0</span></button>
+            <button class="my-asset-tab" type="button" data-my-asset-tab="comments" hidden>点评 <span id="my-comments-count">0</span></button>
+            <button class="my-asset-tab" type="button" data-my-asset-tab="chat" hidden>对话 <span id="my-chat-count">0</span></button>
+          </div>
+          <div class="my-asset-sort" role="group" aria-label="我的资产排序">
+            <span>排序</span>
+            <button class="my-asset-sort-btn active" type="button" data-my-asset-sort="latest">最新</button>
+            <button class="my-asset-sort-btn" type="button" data-my-asset-sort="helpful">有用</button>
+          </div>
+          <div id="my-comments-list" class="my-comments-list"></div>
+        </section>
+      </section>
+      <section id="contributor-page" class="workspace-page contributor-page hidden">
+        <header class="workspace-page-head">
+          <div>
+            <h1 id="contributor-title">贡献主页</h1>
+            <p id="contributor-subtitle">公开沉淀的中文改写、点评、文章对话和点赞文章。</p>
+          </div>
+          <div class="contributor-page-actions">
+            <button id="contributor-follow" class="ghost-btn contributor-follow hidden" type="button">关注</button>
+            <a id="contributor-rss-link" class="ghost-btn contributor-rss-link hidden" href="#" target="_blank" rel="noopener">RSS</a>
+            <button class="icon-btn" id="contributor-close" title="返回贡献榜" aria-label="返回贡献榜"><span data-qm-icon="arrow-left"></span></button>
+          </div>
+        </header>
+        <section id="contributor-profile" class="contributor-profile hidden"></section>
+        <div class="my-asset-tabs" role="tablist" aria-label="贡献主页资产类型">
+          <button class="my-asset-tab active" type="button" data-contributor-tab="translation">改写 <span id="contributor-translation-count">0</span></button>
+          <button class="my-asset-tab" type="button" data-contributor-tab="rewrite">改写 <span id="contributor-rewrite-count">0</span></button>
+          <button class="my-asset-tab" type="button" data-contributor-tab="annotations" hidden>划线 <span id="contributor-annotations-count">0</span></button>
+          <button class="my-asset-tab" type="button" data-contributor-tab="comments" hidden>点评 <span id="contributor-comments-count">0</span></button>
+          <button class="my-asset-tab" type="button" data-contributor-tab="chat" hidden>对话 <span id="contributor-chat-count">0</span></button>
+          <button class="my-asset-tab" type="button" data-contributor-tab="likes" hidden>点赞 <span id="contributor-likes-count">0</span></button>
+        </div>
+        <div class="contributor-asset-sort" role="group" aria-label="贡献主页资产排序">
+          <span>排序</span>
+          <button class="contributor-asset-sort-btn active" type="button" data-contributor-asset-sort="latest">最新</button>
+          <button class="contributor-asset-sort-btn" type="button" data-contributor-asset-sort="helpful">有用</button>
+        </div>
+        <div id="contributor-list" class="my-comments-list"></div>
+      </section>
+      <section id="admin-page" class="workspace-page admin-page hidden">
+        <header class="workspace-page-head">
+          <div>
+            <h1>系统后台</h1>
+            <p>管理员专用。刷新全站、管理订阅源和查看后台任务状态。</p>
+          </div>
+          <div class="admin-page-actions">
+            <button id="admin-back-dashboard" class="ghost-btn" type="button">个人后台</button>
+            <button id="admin-close" class="icon-btn" type="button" title="返回阅读器" aria-label="返回阅读器"><span data-qm-icon="arrow-left"></span></button>
+          </div>
+        </header>
+        <section class="admin-control-strip">
+          <button id="admin-refresh-btn" class="ghost-btn primary" type="button">刷新全部</button>
+          <button id="admin-manage-modal-btn" class="ghost-btn" type="button">弹窗管理源</button>
+        </section>
+        <section id="admin-manage-status" class="manage-status"></section>
+        <section id="admin-manage-list" class="manage-list admin-manage-list"></section>
+        <section class="admin-submission-panel" aria-labelledby="admin-review-title">
+          <header class="admin-submission-head">
+            <div>
+              <h2 id="admin-review-title">待审核投稿</h2>
+              <p>投稿在这里隔离，不会抓取或公开。审核通过后才访问目标站。</p>
+            </div>
+          </header>
+          <div id="admin-submission-requests" class="admin-review-list" role="list" aria-live="polite"></div>
+        </section>
+        <section class="admin-submission-panel" aria-labelledby="admin-submission-title">
+          <header class="admin-submission-head">
+            <div>
+              <h2 id="admin-submission-title">用户投稿管理</h2>
+              <p>封禁违规账号、撤销登录会话，并清理其读者投稿。数据库保留审计记录。</p>
+            </div>
+            <form id="admin-submission-search-form" class="admin-submission-search" role="search">
+              <input id="admin-submission-search" type="search" maxlength="100" placeholder="搜索昵称或邮箱前缀" aria-label="搜索投稿用户" />
+              <button class="ghost-btn" type="submit">搜索</button>
+            </form>
+          </header>
+          <div class="admin-submission-workspace">
+            <div id="admin-submission-users" class="admin-submission-users" role="list" aria-label="用户列表"></div>
+            <div id="admin-submission-detail" class="admin-submission-detail" role="region" aria-live="polite" aria-label="用户投稿详情"></div>
+          </div>
+        </section>
+      </section>
+    </section>
+
+    <!-- ===== Article context ===== -->
+    <aside id="agent-pane" class="context-pane">
+      <div class="context-tabs" aria-label="文章侧栏">
+        <button id="context-tab-tweet" class="context-tab hidden" type="button" data-context-panel="tweet" aria-pressed="true" hidden>
+          <span>AI 写推文</span>
+        </button>
+        <button id="context-tab-agent" class="context-tab hidden" type="button" data-context-panel="agent" aria-pressed="false" hidden>
+          <span>AI 伴读</span>
+        </button>
+        <button id="context-tab-annotations" class="context-tab" type="button" data-context-panel="annotations" aria-pressed="false" hidden>
+          <span>划线评论</span>
+          <strong id="context-annotation-count">0</strong>
+        </button>
+        <div id="context-close-slot" class="context-close-slot">
+          <button id="context-close" class="icon-btn context-close" title="收起右侧栏" aria-label="收起右侧栏"><span data-qm-icon="panel-right-close"></span></button>
+        </div>
+      </div>
+      <section id="tweet-side-panel" class="context-panel tweet-side-panel">
+        <header class="tweet-side-head">
+          <div>
+            <div class="tweet-side-kicker">WRITING DESK</div>
+            <div class="tweet-side-title-row">
+              <h2>AI 写推文</h2>
+              <div id="tweet-side-close-slot" class="tweet-side-close-slot"></div>
+            </div>
+            <p>文章在左边，自己的判断也要留在这里。</p>
+          </div>
+        </header>
+        <section class="tweet-generation-card" aria-live="polite">
+          <div class="tweet-generation-head"><strong>推文草稿</strong><span id="tweet-generation-meta">等待确认理解</span></div>
+          <div class="tweet-progress-row">
+            <div class="tweet-progress-track"><span id="tweet-draft-progress"></span></div>
+            <span id="tweet-draft-progress-value">0%</span>
+            <button id="tweet-draft-stop" class="ghost-btn hidden" type="button">停止生成</button>
+          </div>
+          <div class="tweet-output-wrap">
+            <textarea id="tweet-output" class="tweet-textarea tweet-output" rows="12" maxlength="20000" aria-label="推文草稿，可直接编辑" aria-describedby="tweet-draft-status" placeholder="确认上面的理解后，推文草稿会出现在这里。你也可以直接编辑。"></textarea>
+          </div>
+          <div id="tweet-draft-status" class="tweet-draft-status" role="status" aria-live="polite"></div>
+          <div class="tweet-draft-actions">
+            <button id="tweet-draft-copy" class="ghost-btn" type="button" disabled><span data-qm-icon="copy"></span>复制</button>
+            <button id="tweet-draft-clear" class="ghost-btn" type="button" disabled><span data-qm-icon="trash-2"></span>清空</button>
+          </div>
+        </section>
+        <form id="tweet-draft-form" class="tweet-draft-form tweet-side-form">
+          <div class="tweet-side-reference" id="tweet-draft-reference">请先选择一篇文章。</div>
+          <div class="tweet-workflow">
+            <div class="tweet-step-rail" aria-hidden="true">
+              <button class="tweet-step-marker active" type="button" data-tweet-step-marker="1">1</button>
+              <button class="tweet-step-marker" type="button" data-tweet-step-marker="2">2</button>
+              <button class="tweet-step-marker" type="button" data-tweet-step-marker="3">3</button>
+            </div>
+            <div class="tweet-step-stack">
+              <section class="tweet-step-panel" data-tweet-step="1">
+                <button class="tweet-step-heading" type="button" data-tweet-step-toggle="1" aria-expanded="true">
+                  <span><strong>确定写作起点</strong><small>先确定谁的观点与材料是主角</small></span>
+                  <span data-qm-icon="arrow-right" aria-hidden="true"></span>
+                </button>
+                <div class="tweet-step-content">
+                  <div id="tweet-style-options" class="tweet-style-options tweet-task-options" role="radiogroup" aria-label="推文写作起点">
+                    <button class="tweet-style-option active" type="button" role="radio" data-tweet-task="share" data-tweet-style="share-rewrite" aria-checked="true">
+                      <strong>讲清文章的观点</strong>
+                      <small>以文章为主 · 略过作者私事</small>
+                    </button>
+                    <button class="tweet-style-option" type="button" role="radio" data-tweet-task="polish" data-tweet-style="reflection" aria-checked="false">
+                      <strong>润色我的原稿</strong>
+                      <small>以我为主 · 文章只核对事实</small>
+                    </button>
+                    <button class="tweet-style-option" type="button" role="radio" data-tweet-task="supplement" data-tweet-style="reflection" aria-checked="false">
+                      <strong>写完整我的判断</strong>
+                      <small>以我的判断为主 · 文章补必要论证</small>
+                    </button>
+                  </div>
+                  <p id="tweet-style-help" class="tweet-style-help">文章是主角；下一步可以补充这版想强调或略过的取舍。</p>
+                  <div id="tweet-user-input-step-one" class="tweet-input-slot">
+                    <label id="tweet-user-input-field">
+                      <span id="tweet-user-input-label">这版最想突出什么？ <em id="tweet-input-requirement">可选</em></span>
+                      <textarea id="tweet-user-input" class="tweet-textarea" rows="5" maxlength="2000" placeholder="例如：重点讲它为什么影响小团队，省去原作者的个人经历。"></textarea>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="tweet-step-panel" data-tweet-step="2">
+                <button class="tweet-step-heading" type="button" data-tweet-step-toggle="2" aria-expanded="true">
+                  <span><strong>设定成稿</strong><small>再决定篇幅、语气和本次取舍</small></span>
+                  <span data-qm-icon="arrow-right" aria-hidden="true"></span>
+                </button>
+                <div class="tweet-step-content">
+                  <div class="tweet-choice-field">
+                    <span class="tweet-field-label">输出长度</span>
+                    <div id="tweet-format-options" class="tweet-choice-grid" role="radiogroup" aria-label="推文输出长度">
+                      <button class="tweet-choice active" type="button" data-tweet-format="short" aria-checked="true" title="精炼表达一个核心判断"><span data-qm-icon="message-square-text"></span>短帖</button>
+                      <button class="tweet-choice" type="button" data-tweet-format="long" aria-checked="false" title="展开背景、机制和影响，不限制段落数"><span data-qm-icon="file-text"></span>长帖</button>
+                    </div>
+                  </div>
+                  <div class="tweet-choice-field">
+                    <span class="tweet-field-label">语气风格</span>
+                    <div id="tweet-tone-options" class="tweet-choice-grid" role="radiogroup" aria-label="推文语气风格">
+                      <button class="tweet-choice active" type="button" data-tweet-tone="natural" aria-checked="true">自然分享</button>
+                      <button class="tweet-choice" type="button" data-tweet-tone="restrained" aria-checked="false">克制分析</button>
+                      <button class="tweet-choice" type="button" data-tweet-tone="pointed" aria-checked="false">观点鲜明</button>
+                    </div>
+                  </div>
+                  <div id="tweet-share-angle-slot" class="tweet-input-slot"></div>
+                  <label id="tweet-instruction-field">
+                    <span id="tweet-instruction-label">这版想突出或略过什么？ <em>可选</em></span>
+                    <textarea id="tweet-instruction" class="tweet-textarea" rows="3" maxlength="800" placeholder="例如：重点说清 FDE 为什么难，少讲岗位定义，尽量像我平时写东西。"></textarea>
+                  </label>
+                </div>
+              </section>
+
+              <section class="tweet-step-panel" data-tweet-step="3">
+                <button class="tweet-step-heading" type="button" data-tweet-step-toggle="3" aria-expanded="true">
+                  <span><strong>确认理解并生成</strong><small>检查 AI 会保留什么，再开始写</small></span>
+                  <span data-qm-icon="arrow-right" aria-hidden="true"></span>
+                </button>
+                <div class="tweet-step-content">
+                  <div class="tweet-understanding" aria-live="polite">
+                    <div><strong>主角</strong><span id="tweet-understanding-task">文章的公共观点是主角；重新讲清楚它。</span></div>
+                    <div><strong>判断</strong><span id="tweet-understanding-thesis">围绕文章的公共观点重新组织表达。</span></div>
+                    <div><strong>材料</strong><span id="tweet-understanding-source">文章补充背景，不把作者当成你。</span></div>
+                    <div><strong>成稿</strong><span id="tweet-understanding-format">短帖 · 自然分享</span></div>
+                  </div>
+                  <div class="tweet-step-actions">
+                    <button id="tweet-draft-back" class="ghost-btn" type="button"><span data-qm-icon="arrow-left"></span>返回修改</button>
+                    <button id="tweet-draft-generate" class="ghost-btn primary" type="submit"><span data-qm-icon="sparkles"></span>确认并生成</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+        </form>
+      </section>
+      <section id="agent-side-panel" class="context-panel agent-side-panel hidden">
+        <header class="agent-head">
+          <div class="agent-head-main">
+            <select id="agent-profile-select" class="ai-profile-select agent-profile-select" title="选择用于文章对话的模型" aria-label="选择用于文章对话的模型"></select>
+          </div>
+          <div class="agent-head-actions">
+            <button id="agent-settings" class="icon-btn" title="AI 模型配置" aria-label="AI 模型配置"><span data-qm-icon="settings"></span></button>
+          </div>
+        </header>
+        <div id="agent-context-strip" class="agent-context-strip"></div>
+        <div id="persona-agent-host" class="persona-agent-host" aria-label="AI 伴读对话"></div>
+        <div id="agent-messages" class="agent-messages"></div>
+        <div class="agent-prompts" aria-label="AI 阅读任务"></div>
+        <form id="agent-form" class="agent-form">
+          <div id="agent-inline-context" class="agent-inline-context hidden"></div>
+          <div class="agent-composer">
+            <textarea id="agent-input" rows="2" placeholder="问当前文章…" disabled></textarea>
+            <div class="agent-composer-actions">
+              <span class="agent-composer-hint">基于当前文章</span>
+              <button id="agent-send" class="ghost-btn" type="submit" title="发送" aria-label="发送" disabled><span data-qm-icon="send"></span></button>
+            </div>
+          </div>
+        </form>
+      </section>
+      <section id="annotation-side-panel" class="context-panel annotation-side-panel hidden">
+        <header class="annotation-side-head">
+          <div>
+            <div class="annotation-side-kicker">划线评论</div>
+            <div id="annotation-side-title" class="annotation-side-title">未选择文章</div>
+          </div>
+          <button id="annotation-side-focus" class="icon-btn" type="button" title="跳到正文划线区" aria-label="跳到正文划线区"><span data-qm-icon="corner-down-left"></span></button>
+        </header>
+        <div id="side-annotations-list" class="side-annotations-list"></div>
+      </section>
+    </aside>
+  </div>
+
+  <div id="context-open-rail" class="context-open-rail hidden" aria-label="展开文章侧栏">
+    <button id="agent-open" class="agent-open context-open-btn hidden" type="button" title="展开文章侧栏" aria-label="展开文章侧栏">
+      <span class="agent-open-dot" data-qm-icon="panel-right-open"></span>
+    </button>
+  </div>
+
+  <!-- ===== Manage sources modal ===== -->
+  <div id="manage-modal" class="modal hidden">
+    <div class="modal-box">
+      <header><h2>管理订阅源</h2><button class="icon-btn" id="manage-close" aria-label="关闭管理订阅源"><span data-qm-icon="x"></span></button></header>
+      <div id="manage-status" class="manage-status"></div>
+      <div id="manage-list" class="manage-list"></div>
+    </div>
+  </div>
+
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-box auth-box">
+      <header><h2 id="auth-title">登录</h2><button class="icon-btn" id="auth-close" aria-label="关闭登录弹窗"><span data-qm-icon="x"></span></button></header>
+      <form id="auth-form" class="auth-form">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" data-mode="login">登录</button>
+          <button type="button" class="auth-tab" data-mode="register">注册</button>
+        </div>
+        <input id="auth-email" type="email" autocomplete="email" placeholder="邮箱" required />
+        <input id="auth-password" type="password" autocomplete="current-password" placeholder="密码（至少 8 位）" required />
+        <input id="auth-name" class="hidden" type="text" maxlength="40" autocomplete="nickname" placeholder="显示名" />
+        <button id="auth-submit" class="ghost-btn" type="submit">登录</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="change-password-modal" class="modal hidden">
+    <div class="modal-box auth-box">
+      <header>
+        <div>
+          <h2>修改密码</h2>
+          <p>需要先验证当前密码。</p>
+        </div>
+        <button id="change-password-close" class="icon-btn" type="button" aria-label="关闭修改密码"><span data-qm-icon="x"></span></button>
+      </header>
+      <form id="change-password-form" class="auth-form">
+        <input id="change-password-current" type="password" autocomplete="current-password" placeholder="当前密码" required />
+        <input id="change-password-new" type="password" autocomplete="new-password" placeholder="新密码（至少 8 位）" required />
+        <input id="change-password-confirm" type="password" autocomplete="new-password" placeholder="再次输入新密码" required />
+        <button id="change-password-submit" class="ghost-btn primary" type="submit">保存新密码</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="submit-link-modal" class="modal hidden">
+    <div class="modal-box submit-link-box">
+      <header>
+        <div>
+          <h2>提交链接</h2>
+          <p>进入读者提交源，支持点赞、点评和 AI 处理。</p>
+        </div>
+        <button id="submit-link-close" class="icon-btn" aria-label="关闭提交链接"><span data-qm-icon="x"></span></button>
+      </header>
+      <form id="submit-link-form" class="submit-link-form">
+        <label>
+          <span>链接</span>
+          <input id="submit-link-url" type="url" placeholder="https://example.com/article" required />
+        </label>
+        <label>
+          <span>备注</span>
+          <textarea id="submit-link-note" rows="2" placeholder="为什么值得读"></textarea>
+        </label>
+        <div class="submit-link-actions">
+          <button id="submit-link-submit" class="ghost-btn primary" type="submit">提交</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="article-link-menu" class="article-link-menu hidden" role="menu" aria-label="链接操作">
+    <div id="article-link-menu-url" class="article-link-menu-url"></div>
+    <button id="article-link-open" type="button" role="menuitem">打开网页</button>
+    <button id="article-link-submit" type="button" role="menuitem" hidden>收录到本站</button>
+  </div>
+
+  <div id="agent-prompt-modal" class="modal hidden">
+    <div class="modal-box agent-prompt-box">
+      <header>
+        <div>
+          <h2>常用提示词</h2>
+          <p>保存在当前浏览器。</p>
+        </div>
+        <button id="agent-prompt-close" class="icon-btn" type="button" title="关闭常用提示词" aria-label="关闭常用提示词"><span data-qm-icon="x"></span></button>
+      </header>
+      <form id="agent-prompt-form" class="agent-prompt-form">
+        <input id="agent-prompt-id" type="hidden" />
+        <label>
+          <span>名称</span>
+          <input id="agent-prompt-label" type="text" maxlength="24" placeholder="总结要点" required />
+        </label>
+        <label>
+          <span>提示词</span>
+          <textarea id="agent-prompt-content" rows="4" maxlength="2400" placeholder="写给 AI 的完整提示词" required></textarea>
+        </label>
+        <div class="agent-prompt-form-actions">
+          <button id="agent-prompt-new" class="ghost-btn" type="button">新建</button>
+          <button id="agent-prompt-save" class="ghost-btn primary" type="submit">添加</button>
+        </div>
+      </form>
+      <div class="agent-prompt-library-head">
+        <input id="agent-prompt-search" type="search" placeholder="搜索提示词" />
+      </div>
+      <div id="agent-prompt-list" class="agent-prompt-library-list"></div>
+    </div>
+  </div>
+
+  <div id="ai-config-modal" class="modal hidden">
+    <div class="modal-box ai-config-box">
+      <header>
+        <div>
+          <h2>AI 模型配置</h2>
+          <p>API Key 只保存在当前浏览器，用于你的翻译和文章对话调用。</p>
+        </div>
+        <button class="icon-btn" id="ai-config-close" aria-label="关闭 AI 模型配置"><span data-qm-icon="x"></span></button>
+      </header>
+      <div id="ai-config-modal-mount">
+      <div class="ai-config-content">
+        <aside class="ai-profile-side">
+          <div class="ai-side-head">
+            <span>配置</span>
+            <button id="ai-add-profile" class="ghost-btn" type="button">新增</button>
+          </div>
+          <div id="ai-profile-list" class="ai-profile-list"></div>
+        </aside>
+        <form id="ai-profile-form" class="ai-profile-form">
+          <div id="ai-config-alert" class="ai-config-alert hidden"></div>
+
+          <section class="ai-form-section">
+            <div class="ai-section-head">
+              <span>快捷模板</span>
+              <a id="ai-key-link" class="ai-key-link hidden" target="_blank" rel="noopener">获取 API Key</a>
+            </div>
+            <div id="ai-template-list" class="ai-template-list"></div>
+          </section>
+
+          <section class="ai-form-section">
+            <div class="ai-form-grid two">
+              <label>
+                <span>配置名称</span>
+                <input id="ai-profile-name" type="text" maxlength="48" placeholder="DeepSeek / OpenRouter" required />
+              </label>
+              <label>
+                <span>服务商</span>
+                <input id="ai-provider-name" type="text" maxlength="48" placeholder="DeepSeek" />
+              </label>
+            </div>
+            <div class="ai-form-grid two">
+              <label>
+                <span>Provider ID</span>
+                <input id="ai-provider-id" type="text" maxlength="48" placeholder="deepseek" />
+              </label>
+              <label>
+                <span>分类</span>
+                <input id="ai-provider-category" type="text" maxlength="48" placeholder="国内大模型" />
+              </label>
+            </div>
+            <label>
+              <span>API Key</span>
+              <input id="ai-api-key" type="password" autocomplete="off" placeholder="sk-..." />
+            </label>
+            <label>
+              <span>Base URL</span>
+              <input id="ai-base-url" type="url" placeholder="https://api.deepseek.com/v1" required />
+            </label>
+            <label>
+              <span>模型</span>
+              <input id="ai-model" type="text" placeholder="deepseek-v4-flash" required />
+            </label>
+            <div id="ai-quick-models" class="ai-quick-models"></div>
+            <div class="ai-form-grid three">
+              <label>
+                <span>Temperature</span>
+                <input id="ai-temperature" type="number" min="0" max="2" step="0.1" placeholder="0.7" />
+              </label>
+              <label>
+                <span>Max Tokens</span>
+                <input id="ai-max-tokens" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="2000" />
+              </label>
+              <label class="ai-default-check">
+                <input id="ai-default-profile" type="checkbox" />
+                <span>设为默认</span>
+              </label>
+            </div>
+            <input id="ai-provider-type" type="hidden" value="openai_compatible" />
+            <input id="ai-api-key-url" type="hidden" />
+          </section>
+
+          <section class="ai-form-section tweet-system-prompt-settings">
+            <div class="ai-section-head">
+              <span>推文改写规则</span>
+              <span class="ai-section-note">仅影响“AI 写推文”</span>
+            </div>
+            <p class="settings-note">系统提示词默认已按文章改写和 X 单条帖子的写法整理。你可以在这里调整规则；配置保存在当前浏览器，不影响中文改写和 AI 伴读。</p>
+            <label>
+              <span>推文改写系统提示词</span>
+              <textarea id="tweet-system-prompt" rows="12" maxlength="8000" placeholder="推文改写的内部规则"></textarea>
+            </label>
+            <div class="tweet-style-prompt-grid">
+              <label>
+                <span>分享改写规则</span>
+                <textarea id="tweet-style-prompt-share-rewrite" rows="8" maxlength="6000" placeholder="同观点重写、删去原作者私人经历、不保留原文链接"></textarea>
+              </label>
+              <label>
+                <span>观点感想规则</span>
+                <textarea id="tweet-style-prompt-reflection" rows="8" maxlength="6000" placeholder="以用户感想为主，文章只作参考，保留用户自己的第一人称"></textarea>
+              </label>
+            </div>
+            <div class="ai-form-actions tweet-system-prompt-actions">
+              <button id="tweet-system-prompt-reset" class="ghost-btn" type="button">恢复默认</button>
+            </div>
+          </section>
+
+          <div id="ai-config-note" class="settings-note"></div>
+          <div class="ai-form-actions">
+            <button id="ai-fetch-models" class="ghost-btn" type="button">获取模型</button>
+            <button id="ai-test" class="ghost-btn" type="button">测试连接</button>
+            <button id="ai-delete-profile" class="ghost-btn danger" type="button">删除</button>
+            <button id="ai-save-profile" class="ghost-btn primary" type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="confirm-card">
+      <div class="confirm-icon" id="confirm-icon"><span data-qm-icon="circle-alert"></span></div>
+      <div class="confirm-copy">
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-message"></p>
+      </div>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="ghost-btn" type="button">取消</button>
+        <button id="confirm-ok" class="ghost-btn primary" type="button">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/purify.min.js?v=3.4.11"></script>
+  <script src="/lucide-icons.js?v=4"></script>
+  <script src="/app.js?v=190"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+services:
+  qmreader:
+    build: .
+    container_name: qiaomu-qmreader
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      TITLE_TRANSLATION_LIMIT: 80
+    ports:
+      - "127.0.0.1:3088:8080"
+    volumes:
+      - ./data:/app/data
