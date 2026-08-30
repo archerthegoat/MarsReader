@@ -3466,10 +3466,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   font-size: 12px;
   line-height: 1.5;
 }
-.tweet-draft-box {
-  width: min(680px, 94vw);
-  max-height: min(86vh, 820px);
-}
 .tweet-draft-form {
   min-height: 0;
   overflow: auto;
@@ -3477,64 +3473,10 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   gap: 13px;
   padding: 16px 20px 20px;
 }
-.tweet-style-field {
-  display: grid;
-  gap: 7px;
-}
 .tweet-field-label {
   color: var(--text-1);
   font-size: 12px;
   font-weight: 700;
-}
-.tweet-style-options {
-  display: flex;
-  gap: 6px;
-}
-.tweet-style-option {
-  flex: 1;
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-  padding: 9px 10px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg-2);
-  color: var(--text-2);
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-  align-content: start;
-  overflow-wrap: anywhere;
-}
-.tweet-style-option strong,
-.tweet-style-option small {
-  display: block;
-  overflow-wrap: anywhere;
-}
-.tweet-style-option:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-  color: var(--text-0);
-}
-.tweet-style-option.active {
-  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-  background: color-mix(in srgb, var(--accent) 8%, var(--bg-1));
-  color: var(--text-0);
-  box-shadow: 0 1px 5px rgba(20, 24, 33, 0.08);
-}
-.tweet-style-option strong {
-  font-size: 12px;
-  line-height: 1.3;
-}
-.tweet-style-option small,
-.tweet-style-help {
-  color: var(--text-2);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.45;
-}
-.tweet-style-option.active small { color: var(--accent); }
-.tweet-style-help {
-  margin: 0;
 }
 .tweet-draft-form > label,
 .tweet-system-prompt-settings label {
@@ -3567,15 +3509,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   border-radius: 9px;
   background: var(--bg-2);
   padding: 9px 10px 10px;
-}
-.tweet-style-prompt-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-}
-.tweet-style-prompt-grid textarea {
-  min-height: 150px;
 }
 .tweet-system-prompt-settings summary {
   cursor: pointer;
@@ -6857,7 +6790,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   }
   .reader-section-head { align-items: flex-start; flex-direction: column; gap: 4px; }
   .reader-section-actions { justify-content: space-between; width: 100%; }
-  .tweet-draft-box { width: min(100%, calc(100vw - 18px)); max-height: 92vh; }
   .tweet-draft-form { padding: 13px 14px 16px; }
   .tweet-draft-actions { justify-content: stretch; }
   .tweet-draft-actions .ghost-btn { flex: 1; }
@@ -7007,12 +6939,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   }
 }
 @media (max-width: 720px) {
-  .tweet-style-options {
-    flex-direction: column;
-  }
-  .tweet-style-prompt-grid {
-    grid-template-columns: 1fr;
-  }
   .workspace-page-head {
     align-items: flex-start;
     flex-direction: column;
@@ -8247,75 +8173,15 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 @media (max-width: 560px) {
   .tweet-side-head { padding: 13px 12px 11px; }
   .tweet-side-form { padding: 12px; }
-  .tweet-side-form .tweet-style-options { flex-direction: column; }
   .tweet-side-form .tweet-output { min-height: 170px; }
 }
 
-/* Approved writing-desk production surface: keep the article visible while
-   turning the right rail into a compact, reviewable three-step workflow. */
+/* Shared writing-desk output controls. */
 .tweet-side-form {
   padding: 12px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 28%, var(--surface)) 0, var(--surface) 220px);
 }
 
-.tweet-workflow {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.tweet-step-rail {
-  position: relative;
-  align-self: stretch;
-  min-height: 100%;
-}
-
-.tweet-step-rail::before {
-  content: "";
-  position: absolute;
-  top: var(--tweet-rail-line-top, 13px);
-  left: 50%;
-  width: 1px;
-  height: var(--tweet-rail-line-height, 0px);
-  transform: translateX(-50%);
-  background: var(--border-subtle);
-}
-
-.tweet-step-marker {
-  position: absolute;
-  top: var(--tweet-marker-top, 0px);
-  left: 50%;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 23px;
-  height: 23px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: var(--bg-2);
-  color: var(--text-3);
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 800;
-  transform: translateX(-50%);
-}
-
-.tweet-step-marker:last-child { margin-bottom: 0; }
-.tweet-step-marker:hover { border-color: var(--accent); color: var(--accent); }
-.tweet-step-marker.active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-.tweet-step-marker.complete { border-color: var(--semantic-green, #367363); background: color-mix(in srgb, var(--semantic-green, #367363) 14%, var(--surface)); color: var(--semantic-green, #367363); }
-
-.tweet-step-stack { min-width: 0; }
-
-.tweet-step-panel,
 .tweet-generation-card {
   margin-bottom: 8px;
   border: 1px solid var(--border-subtle);
@@ -8325,86 +8191,11 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   overflow: hidden;
 }
 
-.tweet-step-panel.is-current { border-color: color-mix(in srgb, var(--accent) 45%, var(--border-subtle)); }
-.tweet-step-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 11px;
-  border: 0;
-  background: transparent;
-  color: var(--text-0);
-  cursor: pointer;
-  text-align: left;
-}
-.tweet-step-heading:hover { background: var(--bg-2); }
-.tweet-step-heading > span:first-child { min-width: 0; display: grid; gap: 2px; }
-.tweet-step-heading strong { font-size: 12px; }
-.tweet-step-heading small { color: var(--text-3); font-size: 10px; line-height: 1.4; }
-.tweet-step-heading [data-qm-icon] { color: var(--text-3); }
-.tweet-step-panel.collapsed .tweet-step-content { display: none; }
-.tweet-step-panel.collapsed .tweet-step-heading [data-qm-icon] { transform: rotate(-90deg); }
-
-.tweet-step-content { display: grid; gap: 9px; padding: 0 11px 11px; }
-.tweet-task-options { display: grid; grid-template-columns: 1fr; gap: 6px; }
-.tweet-side-form .tweet-style-option {
-  display: grid;
-  gap: 3px;
-  width: 100%;
-  min-width: 0;
-  padding: 8px 9px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-2);
-  color: var(--text-2);
-  text-align: left;
-}
-.tweet-side-form .tweet-style-option:hover { border-color: var(--border); background: var(--surface); }
-.tweet-side-form .tweet-style-option.active { border-color: var(--accent); background: var(--accent-soft); color: var(--text-0); box-shadow: none; }
-.tweet-side-form .tweet-style-option strong { font-size: 12px; }
-.tweet-side-form .tweet-style-option small { color: var(--text-3); font-size: 10px; line-height: 1.35; }
-.tweet-side-form .tweet-style-option.active small { color: var(--text-2); }
-.tweet-style-help { margin: -2px 0 0; color: var(--text-3); font-size: 10px; line-height: 1.45; }
 .tweet-side-form label { min-width: 0; }
 .tweet-side-form label > span { display: flex; align-items: baseline; gap: 5px; }
 .tweet-side-form label > span em { color: var(--text-3); font-size: 9px; font-style: normal; font-weight: 500; }
 
-.tweet-choice-field { display: grid; gap: 5px; }
 .tweet-field-label { color: var(--text-2); font-size: 10px; font-weight: 750; }
-.tweet-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
-.tweet-choice {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 0;
-  min-height: 28px;
-  padding: 5px 6px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-2);
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 10px;
-}
-.tweet-choice:hover { border-color: var(--border); background: var(--surface); }
-.tweet-choice.active { border-color: var(--accent); background: var(--accent-soft); color: var(--text-0); font-weight: 750; }
-.tweet-choice [data-qm-icon] { width: 13px; height: 13px; color: var(--accent); }
-
-.tweet-guardrails { display: flex; flex-wrap: wrap; gap: 4px 8px; color: var(--text-3); font-size: 9px; line-height: 1.3; }
-.tweet-guardrails > span { display: inline-flex; align-items: center; gap: 3px; }
-.tweet-guardrails [data-qm-icon], .tweet-quality-grid [data-qm-icon] { width: 12px; height: 12px; color: var(--semantic-green, #367363); }
-
-.tweet-understanding { display: grid; gap: 6px; padding: 8px 9px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--bg-2); }
-.tweet-understanding > div { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 7px; color: var(--text-2); font-size: 10px; line-height: 1.45; }
-.tweet-understanding strong { color: var(--accent); font-size: 9px; }
-.tweet-quality-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
-.tweet-quality-grid > span { display: inline-flex; align-items: center; gap: 4px; padding: 6px 7px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-3); font-size: 9px; }
-.tweet-step-actions { display: flex; gap: 6px; justify-content: flex-end; }
-.tweet-step-actions .ghost-btn { flex: 1 1 0; min-width: 0; }
-
 .tweet-generation-card { padding: 10px 11px 11px; }
 .tweet-generation-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .tweet-generation-head strong { font-size: 12px; }
@@ -8418,11 +8209,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .tweet-side-form .tweet-output { min-height: 180px; resize: vertical; background: var(--bg-1) !important; }
 .tweet-side-form .tweet-draft-actions { justify-content: stretch; gap: 6px; margin-top: 7px; }
 .tweet-side-form .tweet-draft-actions .ghost-btn { flex: 1 1 0; min-width: 0; }
-
-@media (max-width: 560px) {
-  .tweet-step-actions { flex-direction: column; }
-  .tweet-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 
 /* Personal source pinning: keep the source row clickable while exposing a small
    persistent pin action without adding a second nested button. */
@@ -9414,36 +9200,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   line-height: 1.45;
 }
 
-#agent-pane .tweet-workflow {
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 10px;
-  margin-top: 16px;
-}
-
-#agent-pane .tweet-step-rail::before {
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--border);
-}
-
-#agent-pane .tweet-step-marker {
-  width: 26px;
-  height: 26px;
-  margin: 0;
-  border-color: var(--border-strong);
-  background: var(--bg-2);
-  color: var(--text-1);
-  font-size: 11px;
-}
-
-#agent-pane .tweet-step-marker.active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-#agent-pane .tweet-step-panel,
 #agent-pane .tweet-generation-card {
   margin-bottom: 10px;
   border-color: var(--border);
@@ -9452,94 +9208,17 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   box-shadow: 0 4px 12px var(--shadow-soft);
 }
 
-#agent-pane .tweet-step-panel.is-current {
-  border-color: color-mix(in srgb, var(--accent) 52%, var(--border));
-}
-
-#agent-pane .tweet-step-heading {
-  padding: 12px 14px;
-}
-
-#agent-pane .tweet-step-heading strong,
 #agent-pane .tweet-generation-head strong {
   font-size: 13px;
 }
 
-#agent-pane .tweet-step-heading small,
-#agent-pane .tweet-generation-head span,
-#agent-pane .tweet-style-help {
+#agent-pane .tweet-generation-head span {
   color: var(--text-2);
   font-size: 11px;
 }
 
-#agent-pane .tweet-step-content {
-  gap: 10px;
-  padding: 0 14px 14px;
-}
-
-#agent-pane .tweet-side-form .tweet-style-option,
-#agent-pane .tweet-choice {
-  border-color: var(--border);
-  border-radius: 9px;
-  background: var(--bg-2);
-  color: var(--text-1);
-}
-
-#agent-pane .tweet-side-form .tweet-style-option {
-  padding: 10px 11px;
-}
-
-#agent-pane .tweet-side-form .tweet-style-option strong {
-  font-size: 13px;
-}
-
-#agent-pane .tweet-side-form .tweet-style-option small,
-#agent-pane .tweet-choice,
 #agent-pane .tweet-field-label {
   font-size: 11px;
-}
-
-#agent-pane .tweet-side-form .tweet-style-option.active,
-#agent-pane .tweet-choice.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--text-0);
-}
-
-#agent-pane .tweet-choice-grid,
-#agent-pane .tweet-quality-grid {
-  gap: 7px;
-}
-
-#agent-pane .tweet-choice {
-  min-height: 32px;
-  padding: 6px 8px;
-}
-
-#agent-pane .tweet-understanding,
-#agent-pane .tweet-quality-grid > span {
-  border-color: var(--border);
-  border-radius: 9px;
-  background: var(--bg-2);
-}
-
-#agent-pane .tweet-understanding {
-  gap: 7px;
-  padding: 10px 11px;
-}
-
-#agent-pane .tweet-understanding > div {
-  grid-template-columns: 46px minmax(0, 1fr);
-  gap: 8px;
-  color: var(--text-1);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-#agent-pane .tweet-quality-grid > span {
-  padding: 7px 8px;
-  color: var(--text-2);
-  font-size: 10px;
 }
 
 #agent-pane .tweet-generation-card {
@@ -9606,10 +9285,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 
   #agent-pane .tweet-side-head h2 {
     font-size: 20px;
-  }
-
-  #agent-pane .tweet-step-marker {
-    margin: 0;
   }
 
   .reader-tweet-open {
@@ -9792,7 +9467,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 }
 
 #agent-pane #tweet-user-input { min-height: 120px; }
-#agent-pane #tweet-instruction { min-height: 80px; }
 
 #agent-pane .tweet-generation-card .tweet-draft-actions {
   display: flex;
@@ -9818,26 +9492,6 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 700;
-}
-
-#agent-pane .tweet-step-rail {
-  align-self: stretch;
-  min-height: 100%;
-  height: auto;
-  padding-top: 0;
-}
-
-#agent-pane .tweet-step-rail::before {
-  top: var(--tweet-rail-line-top, 13px);
-  bottom: auto;
-  height: var(--tweet-rail-line-height, 0px);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-#agent-pane .tweet-guardrails,
-#agent-pane .tweet-quality-grid {
-  display: none !important;
 }
 
 @media (min-width: 981px) {
@@ -9888,5 +9542,114 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   #app.reading:not(.left-collapsed):not(.reader-immersive) #sidebar .sidebar-submit-link .submit-label,
   #app.reading:not(.left-collapsed):not(.reader-immersive) #sidebar .account-card .account-text {
     display: none !important;
+  }
+}
+
+/* v1.1 social draft: one optional thought field, one generation path. */
+#agent-pane .tweet-side-form {
+  display: grid;
+  gap: 10px;
+  padding: 14px 14px 0;
+  background: transparent;
+}
+
+#agent-pane .tweet-compose-card {
+  display: grid;
+  gap: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-1);
+  box-shadow: 0 4px 12px var(--shadow-soft);
+}
+
+#agent-pane .tweet-compose-card label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+#agent-pane .tweet-compose-card .tweet-field-label {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+#agent-pane .tweet-compose-card .tweet-field-label em {
+  color: var(--text-3);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 550;
+}
+
+#agent-pane #tweet-user-input {
+  min-height: 116px;
+  max-height: 360px;
+}
+
+#agent-pane .tweet-field-help {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#agent-pane .tweet-compose-actions {
+  display: flex;
+  margin-top: 12px;
+}
+
+#agent-pane .tweet-compose-actions .ghost-btn {
+  width: 100%;
+  min-height: 38px;
+  border-radius: 9px;
+  font-weight: 760;
+}
+
+#agent-pane .tweet-generation-card {
+  margin: 12px 14px 10px;
+}
+
+#agent-pane .tweet-generation-head strong {
+  color: var(--text-0);
+  font-size: 13px;
+}
+
+#agent-pane .tweet-generation-head span {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+#agent-pane .tweet-progress-row {
+  gap: 8px;
+}
+
+#agent-pane #tweet-draft-progress-value {
+  width: 34px;
+  font-size: 10px;
+}
+
+#agent-pane .tweet-progress-row .ghost-btn {
+  min-height: 28px;
+  border-radius: 8px;
+}
+
+#agent-pane .tweet-textarea:disabled {
+  cursor: wait;
+  opacity: .78;
+}
+
+@media (max-width: 860px) {
+  #agent-pane .tweet-side-form {
+    padding: 12px 12px 0;
+  }
+
+  #agent-pane .tweet-generation-card {
+    margin: 12px;
   }
 }

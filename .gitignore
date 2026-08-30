@@ -11,3 +11,4 @@ data/favicons.json
 data/qmreader.sqlite*
 data/*.png
 data/*.log
+data/*.tmp

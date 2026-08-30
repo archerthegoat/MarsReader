@@ -4,9 +4,9 @@
 
 > 基于 [QMReader](https://github.com/joeseesun/qmreader) 演化的个人版 RSS 阅读与写作工作台。
 
-Mars Reader 把筛选信息、深读文章、读中文改写、形成自己的判断，以及写成一条可继续编辑的推文，收进同一个本地优先的界面。它保留 QMReader 的 RSS 阅读、中文改写和文章上下文能力，在此基础上为个人阅读—写作流程加入了 AI 写推文工作台与更收束的三栏界面。
+Mars Reader 把筛选信息、深读文章、读中文改写、形成自己的判断，以及生成一版可继续编辑的社交媒体草稿，收进同一个本地优先的界面。它保留 QMReader 的 RSS 阅读、中文改写和文章上下文能力，在此基础上为个人阅读—写作流程加入了更轻量的 AI 写推文工作台与更收束的三栏界面。
 
-![Mars Reader 工作台：信息源、文章阅读与 AI 写推文](docs/assets/marsreader-workbench.png)
+![Mars Reader v1.1 工作台：信息源、文章阅读与 AI 写推文](docs/assets/marsreader-workbench.png)
 
 ## 这是什么
 
@@ -14,22 +14,22 @@ Mars Reader 把筛选信息、深读文章、读中文改写、形成自己的�
 
 1. 在左侧筛选信息源、未读、收藏、历史和文章；
 2. 在中间阅读原文、摘要和中文改写；
-3. 在右侧保留自己的判断，决定是同观点重写、润色原稿，还是用文章补充论点；
-4. 生成后继续编辑、复制或清空草稿。草稿按文章保存，不会因为切换文章而丢失。
+3. 在右侧按需写下自己的判断、最想强调的点或希望略过的内容；
+4. 让 AI 结合文章重点与临时想法生成一版草稿，再继续编辑、复制或清空。草稿按文章保存，不会因为切换文章而丢失。
 
-## V1.0 的重点变化
+## V1.1 的重点变化
 
-### AI 写推文：文章在左，判断留在自己手里
+### AI 写推文：不选模式，只告诉它你想怎么讲
 
-点击阅读器工具栏最前面的“AI 写推文”即可打开右侧 Writing Desk。它提供三种清晰的写作起点：
+点击阅读器工具栏最前面的“AI 写推文”即可打开右侧 Writing Desk。v1.1 将原来的多种写作起点、篇幅、语气和三步确认流程收敛成一个简单任务：
 
-- **同观点重写**：以文章的公共观点和事实为材料，换一套结构与措辞表达；会移除原文链接，也不把原作者的第一人称经历改成你的经历。
-- **润色我的原稿**：以你输入的感想、判断或草稿为主，文章只用于核对事实与补足背景。
-- **用文章补充我的观点**：仍以你的观点为主，文章只补充必要论据，不替你发明判断。
+- **留空直接生成**：从文章的公共信息中选择最值得分享的一条主线，不把原作者的私人经历写成你的经历。
+- **补充临时想法**：写下自己的判断、希望强调或略过的内容；草稿优先按你的立场和取舍组织，文章只补充明确支持的事实、背景和机制。
+- **继续编辑**：生成结果按文章自动保存，支持停止、重新生成、复制和清空。
 
-输出会根据内容选择自然段与局部要点；需要列举时才使用真正的项目符号，而不是把整条推文机械切成段落或编号。每次生成的草稿都可直接修改、复制、清空，并保留生成状态与内容更新提示。
+输出更通俗、有趣、有情绪，可以适度加强表达力度，但不会夸大事实、数字或因果。通常每段 1–2 句、最多 3 句；默认使用自然段，确实需要并列多个独立观点时才局部使用真正的项目符号。旧版草稿仍可打开、编辑和重新生成。
 
-![Mars Reader AI 写推文：文章阅读与可编辑推文草稿](docs/assets/marsreader-writing-desk.png)
+![Mars Reader v1.1 AI 写推文：文章重点、临时想法与可编辑草稿](docs/assets/marsreader-writing-desk.png)
 
 ### 中文改写：在阅读器里读懂，而不必离开文章
 
@@ -43,7 +43,7 @@ Mars Reader 把筛选信息、深读文章、读中文改写、形成自己的�
 
 - **左侧**：信息源导航、文章列表、搜索和个人阅读状态；
 - **中间**：文章标题、原文、中文改写、摘要和正文；
-- **右侧**：仅在写作时展开的 AI 写推文工作台，包含可折叠的步骤引导与可编辑草稿；
+- **右侧**：仅在写作时展开的 AI 写推文工作台，只保留文章引用、一个可选想法框、生成按钮和可编辑草稿；
 - **工具栏**：AI 写推文优先放在最前；进入写作状态后，关闭控制移动到写作台标题行，减少重复标题与重复按钮。
 
 ## 功能地图
@@ -53,7 +53,7 @@ Mars Reader 把筛选信息、深读文章、读中文改写、形成自己的�
 | 多源 RSS 阅读 | 聚合 RSSHub、直接 RSS、站点地图、Hacker News、Product Hunt、GitHub Trending、Hugging Face Papers 等信息源。 |
 | 阅读工作台 | 在一页内完成信息源筛选、文章列表、深读和个人阅读状态管理。 |
 | 中文改写 | 在文章阅读器中生成与查看中文改写，也可切换到对照视图。 |
-| AI 写推文 | 围绕文章与自己的判断生成可编辑草稿，支持同观点重写、原稿润色和论点补充。 |
+| AI 写推文 | 提炼文章重点，结合本次临时想法生成可编辑社交媒体草稿。 |
 | 个人阅读状态 | 未读、收藏、历史和已保存的推文草稿按文章沉淀。 |
 | 文章上下文工具 | 保留文章级 AI 对话、点评和划线等既有阅读能力。 |
 | 自托管与本地优先 | 使用 Express 与 SQLite 运行；服务端密钥放在环境变量，浏览器自定义 AI 配置保留在本机。 |
@@ -98,8 +98,8 @@ npm run dev:hot
 除 `.env` 的服务端配置外，也可以在界面内维护自己的浏览器 AI 配置：点击左下角的**设置**图标，选择**我的后台**，再进入**AI 设置**。
 
 - 在这里添加或切换 AI 配置，可填写 API Key、Base URL、模型、Temperature 与 Max Tokens，并可测试连接或设为默认；
-- 同一页的“**推文改写规则**”用于编辑**推文改写系统提示词**，以及“分享改写规则”和“观点感想规则”；它们只影响“AI 写推文”，不影响中文改写和 AI 伴读；
-- 这些页面内 AI 配置与推文规则都保存在当前浏览器，可随时点“恢复默认”还原推文规则；不会写入 SQLite 或提交到 Git。
+- 同一页的“**推文改写规则**”只保留一个可编辑的**推文改写系统提示词**；它只影响“AI 写推文”，不影响中文改写和 AI 伴读；
+- 页面内 AI 配置与推文规则都保存在当前浏览器，可随时点“恢复默认”还原系统提示词；不会写入 SQLite 或提交到 Git。
 
 ### 5. 验证
 
@@ -129,7 +129,7 @@ node --check public/app.js
 - 服务端 API Key 只从环境变量或 `.env` 读取，不写入仓库；
 - 浏览器中自行配置的 AI Key 保存在该浏览器的 localStorage，不存入 SQLite；
 - AI 输出依赖所选 Provider、模型和额度，生成前应自行确认事实与表达；
-- 分享改写会移除文章来源链接，但这不代替你对公开表达、素材使用和发布平台规则的判断；
+- 社交草稿会移除文章来源链接，但这不代替你对公开表达、素材使用和发布平台规则的判断；
 - SQLite 适用于个人或小团队自托管，不是高并发多租户方案。
 
 ## 来源、贡献者与许可证
@@ -151,11 +151,13 @@ MIT License. See [LICENSE](LICENSE).
 
 > A personal RSS reading and writing workbench built on [QMReader](https://github.com/joeseesun/qmreader).
 
-Mars Reader keeps feed aggregation, article reading, Chinese rewrites, and article-context tools from QMReader, then adapts them to a personal workflow: filter information, read deeply, keep your own judgment, and turn it into an editable X post draft.
+Mars Reader keeps feed aggregation, article reading, Chinese rewrites, and article-context tools from QMReader, then adapts them to a personal workflow: filter information, read deeply, keep your own judgment, and turn it into an editable social-media draft.
 
-## What changed in V1.0
+## What changed in V1.1
 
-- **AI tweet writing desk** — choose between rewriting a shared viewpoint, polishing your own draft, or supplementing your judgment with article evidence. Drafts are saved per article and remain editable.
+- **One clear social-draft flow** — generate directly from an article, or add a temporary viewpoint, emphasis, disagreement, or omission. The draft prioritizes your input, stays editable, and is saved per article.
+- **Lighter writing controls** — the former modes, length and tone selectors, extra instruction field, and three-step workflow have been removed. Stop, regenerate, copy, clear, and autosave remain available.
+- **More readable default writing** — concise mobile-friendly paragraphs, natural prose with lists only when useful, and a more conversational and lively voice without exaggerating facts.
 - **Chinese rewrites in the reader** — switch among original text, Chinese rewrite, and a comparison view without leaving the article.
 - **A more focused desktop surface** — source navigation and article list on the left, deep reading in the middle, and an on-demand writing desk on the right.
 - **Local-first self-hosting** — Express and SQLite power the app; server keys stay in environment variables and browser AI profiles stay in local storage.
@@ -185,8 +187,8 @@ Open <http://marsreader.localhost:18081/>. This mode binds to localhost and enab
 In addition to `.env` server settings, you can manage browser-local AI settings from the interface: click the **settings** icon at the lower-left, choose **My Dashboard**, then open **AI Settings**.
 
 - Add or switch AI profiles with an API key, base URL, model, temperature, and max tokens; test the connection or make a profile the default.
-- The **Tweet rewrite rules** section on the same page contains the **Tweet rewrite system prompt**, plus separate rules for shared-viewpoint rewrites and personal reflections. These rules affect only **AI tweet writing**, not Chinese rewrites or the article AI companion.
-- Browser AI profiles and tweet-writing rules stay in the current browser. Use **Restore defaults** to reset the tweet rules; nothing is written to SQLite or Git.
+- The **Tweet rewrite rules** section on the same page contains one editable **Tweet rewrite system prompt**. It affects only **AI tweet writing**, not Chinese rewrites or the article AI companion.
+- Browser AI profiles and the tweet-writing prompt stay in the current browser. Use **Restore defaults** to reset the prompt; nothing is written to SQLite or Git.
 
 ## Credits and license
 

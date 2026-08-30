@@ -79,6 +79,37 @@ test('tweet drafts keep one latest editable record per user and entry', () => {
   assert.equal(store.getTweetDraft('tweet-draft-a', owner.id).draft, '最新草稿');
 });
 
+test('unified social drafts use compose metadata while legacy draft metadata remains readable', () => {
+  store.upsertEntries([
+    entry('tweet-draft-unified', '统一社交草稿'),
+    entry('tweet-draft-legacy', '旧版观点草稿'),
+  ]);
+
+  const unified = store.saveTweetDraft('tweet-draft-unified', owner.id, {
+    style: 'share-rewrite',
+    userInput: '我的临时想法',
+    draft: '统一任务生成的草稿',
+  });
+  assert.equal(unified.style, 'share-rewrite');
+  assert.equal(unified.task, 'compose');
+  assert.equal(unified.format, 'short');
+  assert.equal(unified.tone, 'natural');
+
+  const legacy = store.saveTweetDraft('tweet-draft-legacy', owner.id, {
+    style: 'reflection',
+    task: 'supplement',
+    format: 'long',
+    tone: 'pointed',
+    userInput: '旧版观点',
+    instruction: '旧版额外要求',
+    draft: '旧版草稿',
+  });
+  assert.equal(legacy.style, 'reflection');
+  assert.equal(legacy.task, 'supplement');
+  assert.equal(legacy.userInput, '旧版观点');
+  assert.equal(legacy.instruction, '旧版额外要求');
+});
+
 test('tweet drafts are marked stale when the source article changes', () => {
   store.upsertEntries([entry('tweet-draft-a', '第一篇文章（更新）', Date.now(), 'tweet-draft-a-v2')]);
   const draft = store.getTweetDraft('tweet-draft-a', owner.id);

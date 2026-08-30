@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260826-mars-no-orbit" />
   <link rel="shortcut icon" href="/favicon.svg?v=20260826-mars-no-orbit" />
   <meta name="theme-color" content="#281014" />
-  <link rel="stylesheet" href="/styles.css?v=191" />
+  <link rel="stylesheet" href="/styles.css?v=193" />
   <meta name="description" content="火星阅读器：围绕 RSS 文章沉淀中文改写、人工点评和文章对话的公开阅读站。" />
   <link rel="canonical" href="https://rss.qiaomu.ai/" />
   <meta property="og:site_name" content="Mars Reader" />
@@ -533,18 +533,31 @@
               <h2>AI 写推文</h2>
               <div id="tweet-side-close-slot" class="tweet-side-close-slot"></div>
             </div>
-            <p>文章在左边，自己的判断也要留在这里。</p>
+            <p>读完文章，顺手把你的判断写成一版草稿。</p>
           </div>
         </header>
+        <form id="tweet-draft-form" class="tweet-draft-form tweet-side-form">
+          <div class="tweet-side-reference" id="tweet-draft-reference">请先选择一篇文章。</div>
+          <section class="tweet-compose-card">
+            <label for="tweet-user-input">
+              <span class="tweet-field-label">我的临时想法 <em>可选</em></span>
+              <textarea id="tweet-user-input" class="tweet-textarea" rows="5" maxlength="3000" aria-describedby="tweet-user-input-help" placeholder="例如：我更关心它为什么影响小团队；保留这个判断，少讲产品背景。"></textarea>
+            </label>
+            <small id="tweet-user-input-help" class="tweet-field-help">不写也可以；写了以后，这里的判断和取舍会优先。</small>
+            <div class="tweet-compose-actions">
+              <button id="tweet-draft-generate" class="ghost-btn primary" type="submit"><span data-qm-icon="sparkles"></span>生成草稿</button>
+            </div>
+          </section>
+        </form>
         <section class="tweet-generation-card" aria-live="polite">
-          <div class="tweet-generation-head"><strong>推文草稿</strong><span id="tweet-generation-meta">等待确认理解</span></div>
+          <div class="tweet-generation-head"><strong>推文草稿</strong><span id="tweet-generation-meta">等待生成</span></div>
           <div class="tweet-progress-row">
             <div class="tweet-progress-track"><span id="tweet-draft-progress"></span></div>
             <span id="tweet-draft-progress-value">0%</span>
             <button id="tweet-draft-stop" class="ghost-btn hidden" type="button">停止生成</button>
           </div>
           <div class="tweet-output-wrap">
-            <textarea id="tweet-output" class="tweet-textarea tweet-output" rows="12" maxlength="20000" aria-label="推文草稿，可直接编辑" aria-describedby="tweet-draft-status" placeholder="确认上面的理解后，推文草稿会出现在这里。你也可以直接编辑。"></textarea>
+            <textarea id="tweet-output" class="tweet-textarea tweet-output" rows="12" maxlength="20000" aria-label="推文草稿，可直接编辑" aria-describedby="tweet-draft-status" placeholder="草稿会出现在这里，你可以直接编辑。"></textarea>
           </div>
           <div id="tweet-draft-status" class="tweet-draft-status" role="status" aria-live="polite"></div>
           <div class="tweet-draft-actions">
@@ -552,96 +565,6 @@
             <button id="tweet-draft-clear" class="ghost-btn" type="button" disabled><span data-qm-icon="trash-2"></span>清空</button>
           </div>
         </section>
-        <form id="tweet-draft-form" class="tweet-draft-form tweet-side-form">
-          <div class="tweet-side-reference" id="tweet-draft-reference">请先选择一篇文章。</div>
-          <div class="tweet-workflow">
-            <div class="tweet-step-rail" aria-hidden="true">
-              <button class="tweet-step-marker active" type="button" data-tweet-step-marker="1">1</button>
-              <button class="tweet-step-marker" type="button" data-tweet-step-marker="2">2</button>
-              <button class="tweet-step-marker" type="button" data-tweet-step-marker="3">3</button>
-            </div>
-            <div class="tweet-step-stack">
-              <section class="tweet-step-panel" data-tweet-step="1">
-                <button class="tweet-step-heading" type="button" data-tweet-step-toggle="1" aria-expanded="true">
-                  <span><strong>确定写作起点</strong><small>先确定谁的观点与材料是主角</small></span>
-                  <span data-qm-icon="arrow-right" aria-hidden="true"></span>
-                </button>
-                <div class="tweet-step-content">
-                  <div id="tweet-style-options" class="tweet-style-options tweet-task-options" role="radiogroup" aria-label="推文写作起点">
-                    <button class="tweet-style-option active" type="button" role="radio" data-tweet-task="share" data-tweet-style="share-rewrite" aria-checked="true">
-                      <strong>讲清文章的观点</strong>
-                      <small>以文章为主 · 略过作者私事</small>
-                    </button>
-                    <button class="tweet-style-option" type="button" role="radio" data-tweet-task="polish" data-tweet-style="reflection" aria-checked="false">
-                      <strong>润色我的原稿</strong>
-                      <small>以我为主 · 文章只核对事实</small>
-                    </button>
-                    <button class="tweet-style-option" type="button" role="radio" data-tweet-task="supplement" data-tweet-style="reflection" aria-checked="false">
-                      <strong>写完整我的判断</strong>
-                      <small>以我的判断为主 · 文章补必要论证</small>
-                    </button>
-                  </div>
-                  <p id="tweet-style-help" class="tweet-style-help">文章是主角；下一步可以补充这版想强调或略过的取舍。</p>
-                  <div id="tweet-user-input-step-one" class="tweet-input-slot">
-                    <label id="tweet-user-input-field">
-                      <span id="tweet-user-input-label">这版最想突出什么？ <em id="tweet-input-requirement">可选</em></span>
-                      <textarea id="tweet-user-input" class="tweet-textarea" rows="5" maxlength="2000" placeholder="例如：重点讲它为什么影响小团队，省去原作者的个人经历。"></textarea>
-                    </label>
-                  </div>
-                </div>
-              </section>
-
-              <section class="tweet-step-panel" data-tweet-step="2">
-                <button class="tweet-step-heading" type="button" data-tweet-step-toggle="2" aria-expanded="true">
-                  <span><strong>设定成稿</strong><small>再决定篇幅、语气和本次取舍</small></span>
-                  <span data-qm-icon="arrow-right" aria-hidden="true"></span>
-                </button>
-                <div class="tweet-step-content">
-                  <div class="tweet-choice-field">
-                    <span class="tweet-field-label">输出长度</span>
-                    <div id="tweet-format-options" class="tweet-choice-grid" role="radiogroup" aria-label="推文输出长度">
-                      <button class="tweet-choice active" type="button" data-tweet-format="short" aria-checked="true" title="精炼表达一个核心判断"><span data-qm-icon="message-square-text"></span>短帖</button>
-                      <button class="tweet-choice" type="button" data-tweet-format="long" aria-checked="false" title="展开背景、机制和影响，不限制段落数"><span data-qm-icon="file-text"></span>长帖</button>
-                    </div>
-                  </div>
-                  <div class="tweet-choice-field">
-                    <span class="tweet-field-label">语气风格</span>
-                    <div id="tweet-tone-options" class="tweet-choice-grid" role="radiogroup" aria-label="推文语气风格">
-                      <button class="tweet-choice active" type="button" data-tweet-tone="natural" aria-checked="true">自然分享</button>
-                      <button class="tweet-choice" type="button" data-tweet-tone="restrained" aria-checked="false">克制分析</button>
-                      <button class="tweet-choice" type="button" data-tweet-tone="pointed" aria-checked="false">观点鲜明</button>
-                    </div>
-                  </div>
-                  <div id="tweet-share-angle-slot" class="tweet-input-slot"></div>
-                  <label id="tweet-instruction-field">
-                    <span id="tweet-instruction-label">这版想突出或略过什么？ <em>可选</em></span>
-                    <textarea id="tweet-instruction" class="tweet-textarea" rows="3" maxlength="800" placeholder="例如：重点说清 FDE 为什么难，少讲岗位定义，尽量像我平时写东西。"></textarea>
-                  </label>
-                </div>
-              </section>
-
-              <section class="tweet-step-panel" data-tweet-step="3">
-                <button class="tweet-step-heading" type="button" data-tweet-step-toggle="3" aria-expanded="true">
-                  <span><strong>确认理解并生成</strong><small>检查 AI 会保留什么，再开始写</small></span>
-                  <span data-qm-icon="arrow-right" aria-hidden="true"></span>
-                </button>
-                <div class="tweet-step-content">
-                  <div class="tweet-understanding" aria-live="polite">
-                    <div><strong>主角</strong><span id="tweet-understanding-task">文章的公共观点是主角；重新讲清楚它。</span></div>
-                    <div><strong>判断</strong><span id="tweet-understanding-thesis">围绕文章的公共观点重新组织表达。</span></div>
-                    <div><strong>材料</strong><span id="tweet-understanding-source">文章补充背景，不把作者当成你。</span></div>
-                    <div><strong>成稿</strong><span id="tweet-understanding-format">短帖 · 自然分享</span></div>
-                  </div>
-                  <div class="tweet-step-actions">
-                    <button id="tweet-draft-back" class="ghost-btn" type="button"><span data-qm-icon="arrow-left"></span>返回修改</button>
-                    <button id="tweet-draft-generate" class="ghost-btn primary" type="submit"><span data-qm-icon="sparkles"></span>确认并生成</button>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-
-        </form>
       </section>
       <section id="agent-side-panel" class="context-panel agent-side-panel hidden">
         <header class="agent-head">
@@ -877,21 +800,11 @@
               <span>推文改写规则</span>
               <span class="ai-section-note">仅影响“AI 写推文”</span>
             </div>
-            <p class="settings-note">系统提示词默认已按文章改写和 X 单条帖子的写法整理。你可以在这里调整规则；配置保存在当前浏览器，不影响中文改写和 AI 伴读。</p>
+            <p class="settings-note">系统提示词默认会把文章重点和你的临时想法整理成社交媒体草稿。你可以在这里调整写法；配置保存在当前浏览器，不影响中文改写和 AI 伴读。</p>
             <label>
               <span>推文改写系统提示词</span>
               <textarea id="tweet-system-prompt" rows="12" maxlength="8000" placeholder="推文改写的内部规则"></textarea>
             </label>
-            <div class="tweet-style-prompt-grid">
-              <label>
-                <span>分享改写规则</span>
-                <textarea id="tweet-style-prompt-share-rewrite" rows="8" maxlength="6000" placeholder="同观点重写、删去原作者私人经历、不保留原文链接"></textarea>
-              </label>
-              <label>
-                <span>观点感想规则</span>
-                <textarea id="tweet-style-prompt-reflection" rows="8" maxlength="6000" placeholder="以用户感想为主，文章只作参考，保留用户自己的第一人称"></textarea>
-              </label>
-            </div>
             <div class="ai-form-actions tweet-system-prompt-actions">
               <button id="tweet-system-prompt-reset" class="ghost-btn" type="button">恢复默认</button>
             </div>
@@ -928,6 +841,6 @@
 
   <script src="/purify.min.js?v=3.4.11"></script>
   <script src="/lucide-icons.js?v=4"></script>
-  <script src="/app.js?v=190"></script>
+  <script src="/app.js?v=192"></script>
 </body>
 </html>
