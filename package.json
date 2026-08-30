@@ -1,6 +1,6 @@
 {
   "name": "qmreader",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Neutral online RSS reader powered by RSSHub and direct feeds",
   "license": "MIT",
   "homepage": "https://rss.qiaomu.ai",
@@ -21,6 +21,14 @@
     "start": "node server.js",
     "dev": "node server.js",
     "dev:hot": "node scripts/hot-server.js",
+    "service:install": "node scripts/macos-launchagent.js install",
+    "service:start": "node scripts/macos-launchagent.js start",
+    "service:stop": "node scripts/macos-launchagent.js stop",
+    "service:restart": "node scripts/macos-launchagent.js restart",
+    "service:status": "node scripts/macos-launchagent.js status",
+    "service:logs": "node scripts/macos-launchagent.js logs",
+    "service:uninstall": "node scripts/macos-launchagent.js uninstall",
+    "local:deploy": "node scripts/macos-launchagent.js deploy",
     "test": "node --test test/*.test.js",
     "icons:generate": "node scripts/generate-lucide-icons.js",
     "refresh:worker": "node scripts/refresh-worker.js --kind=refresh"

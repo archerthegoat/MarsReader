@@ -83,7 +83,38 @@ npm start
 
 这是正常服务模式，遵循 `.env` 中的认证、Host、端口与 Cookie 配置，适合本地常驻或部署前验证。
 
-### 3. 本地热更新开发
+### 3. macOS 本机常驻服务
+
+macOS 用户可以使用原生用户级 LaunchAgent，让 Mars Reader 在登录后自动启动、异常退出后自动恢复，并把日志保存在 `~/Library/Logs/MarsReader/`：
+
+```bash
+npm run service:install
+npm run service:status
+```
+
+常用管理命令：
+
+```bash
+npm run service:start
+npm run service:stop
+npm run service:restart
+npm run service:logs
+npm run service:uninstall
+```
+
+LaunchAgent 固定运行稳定服务并监听 <http://127.0.0.1:8080>。它会覆盖 `.env` 中的 `HOST`、`PORT`、`COOKIE_SECURE` 和 `MARSREADER_LOCAL_AUTH_BYPASS`：只允许本机访问、使用本机 HTTP Cookie，并保留正常登录认证；其他 AI、管理员和刷新配置仍从 `.env` 读取。
+
+`service:stop` 只停止当前登录会话中的服务，下次登录仍会自动启动；`service:uninstall` 会移除自动启动配置，但保留日志和 `data/`。如果移动项目目录或升级后 Node 路径失效，请重新运行 `service:install`。
+
+本地修改不会由 LaunchAgent 自动同步或部署。使用下面的命令先运行测试和语法检查，全部通过后才重启服务并验证 HTTP：
+
+```bash
+npm run local:deploy
+```
+
+实际 plist、日志、绝对路径、`.env`、密钥和运行数据都只留在本机，不应提交到 Git。
+
+### 4. 本地热更新开发
 
 ```bash
 npm run dev:hot
@@ -93,7 +124,7 @@ npm run dev:hot
 
 这个命令监听后端与前端关键文件，改动后自动重启本地服务；它默认仅绑定 `127.0.0.1`，并启用本地调试用的认证绕过。它只适合自己的电脑，不应暴露到局域网或公网。
 
-### 4. 在页面内配置 AI
+### 5. 在页面内配置 AI
 
 除 `.env` 的服务端配置外，也可以在界面内维护自己的浏览器 AI 配置：点击左下角的**设置**图标，选择**我的后台**，再进入**AI 设置**。
 
@@ -101,7 +132,7 @@ npm run dev:hot
 - 同一页的“**推文改写规则**”只保留一个可编辑的**推文改写系统提示词**；它只影响“AI 写推文”，不影响中文改写和 AI 伴读；
 - 页面内 AI 配置与推文规则都保存在当前浏览器，可随时点“恢复默认”还原系统提示词；不会写入 SQLite 或提交到 Git。
 
-### 5. 验证
+### 6. 验证
 
 ```bash
 npm test
@@ -173,6 +204,25 @@ npm start
 ```
 
 Open <http://localhost:8080>.
+
+### Persistent macOS service
+
+On macOS, install the native per-user LaunchAgent to start Mars Reader at login, restart it after unexpected exits, and keep local logs:
+
+```bash
+npm run service:install
+npm run service:status
+```
+
+Use `service:start`, `service:stop`, `service:restart`, `service:logs`, or `service:uninstall` for lifecycle management. The service is fixed to <http://127.0.0.1:8080>, keeps normal login authentication enabled, and stores generated configuration and logs only on the current Mac. `service:uninstall` preserves application data and logs.
+
+After local code changes, run the validation gate before restarting:
+
+```bash
+npm run local:deploy
+```
+
+The LaunchAgent does not pull from Git or deploy GitHub changes automatically.
 
 For local hot reload only:
 
